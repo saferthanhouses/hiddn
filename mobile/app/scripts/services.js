@@ -47,4 +47,20 @@ angular.module('hiddn.services', [])
   //     return null;
   //   }
   // };
-});
+})
+.factory('TreasureFactory', function($http, ENV){
+
+  var Factory = {}
+
+  Factory.createTreasure = function(treasure){
+    $http.post(ENV.apiEndpoint + 'api/treasure/', treasure)
+      .then(function(response){
+        console.log(response.data);
+      }, function(error){
+        console.error(error);
+      })
+  }
+
+  return Factory;
+
+})

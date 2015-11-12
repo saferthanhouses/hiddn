@@ -12,7 +12,11 @@ angular.module('hiddn.controllers', [])
   //});
 })
 
-.controller('TreasureCtrl', function($scope, $stateParams, Chats) {
+.controller('TreasureCtrl', function($scope, $stateParams, TreasureFactory) {
+
+	$scope.hideTreasure = function(treasure) {
+		TreasureFactory.createTreasure({coords: '0000 0000', value: treasure});
+	};
 })
 
 .controller('UserCtrl', function($scope) {

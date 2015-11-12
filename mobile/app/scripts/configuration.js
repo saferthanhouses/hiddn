@@ -2,6 +2,6 @@
 
  angular.module('config', [])
 
-.constant('ENV', {name:'development',apiEndpoint:'http://192.168.3.96:1337'})
+.constant('ENV', {name:'development',apiEndpoint:'http://dev.yoursite.com:10000/'})
 
 ;

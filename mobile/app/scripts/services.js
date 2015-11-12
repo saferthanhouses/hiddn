@@ -53,7 +53,7 @@ angular.module('hiddn.services', [])
   var Factory = {}
 
   Factory.createTreasure = function(treasure){
-    $http.post(ENV.apiEndpoint + 'api/treasure/', treasure)
+    return $http.post(ENV.apiEndpoint + 'api/treasure/', treasure)
       .then(function(response){
         console.log("Treasure successfully hidden at", response.data.coords);
         return response.data;

@@ -49,6 +49,15 @@ router.put('/:id', function(req, res, next){
 	.then(null, next);
 })
 
+router.post('/', function(req, res, next){
+	Treasure.create(req.body)
+		.then(function(data){
+			console.log("treasure created", data);
+			res.status(201).json(data);
+		})
+	.then(null, next);
+})
+
 router.delete('/:id', function(req, res, next){
 	req.treasure.remove()
 		.then(function() {

@@ -22,6 +22,7 @@ var Promise = require('bluebird');
 var chalk = require('chalk');
 var connectToDb = require('./server/db');
 var User = Promise.promisifyAll(mongoose.model('User'));
+var Treasure = Promise.promisifyAll(mongoose.model('Treasure'));
 
 var seedUsers = function () {
 
@@ -40,19 +41,33 @@ var seedUsers = function () {
 
 };
 
-connectToDb.then(function () {
-    User.findAsync({}).then(function (users) {
-        if (users.length === 0) {
-            return seedUsers();
-        } else {
-            console.log(chalk.magenta('Seems to already be user data, exiting!'));
-            process.kill(0);
+var seedTreasure = function() {
+    var treasure = [
+        {
+            coords: "40.7051951 -74.0090403",
+            value: "GOLD"
+        },
+        {
+            coords: "41.7051951 -74.0090403",
+            value: "SILVER"
         }
-    }).then(function () {
-        console.log(chalk.green('Seed successful!'));
-        process.kill(0);
-    }).catch(function (err) {
-        console.error(err);
-        process.kill(1);
+    ]
+
+    return Treasure.createAsync(treasure);
+}
+
+connectToDb.then(function (db) {
+    db.db.dropDatabase()
+    .then(function(){
+        return seedUsers();
+    }).then(function(){
+        return seedTreasure();
+    }).then(function(treasure){
+        // this.reviews = _indexBy(reviews, '')
+        console.log("db seeded");
+        process.exit(0);
+    }).catch(function(err){
+        console.log(err);
+        process.exit(1);
     });
 });

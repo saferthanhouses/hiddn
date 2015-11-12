@@ -14,13 +14,16 @@ var db = mongoose.connect(DATABASE_URI).connection;
 require('./models');
 
 var startDbPromise = new Promise(function (resolve, reject) {
-    db.on('open', resolve);
+    db.on('open', function(){
+    	resolve(db);
+    });
     db.on('error', reject);
 });
 
 console.log(chalk.yellow('Opening connection to MongoDB . . .'));
-startDbPromise.then(function () {
+startDbPromise.then(function (db) {
     console.log(chalk.green('MongoDB connection opened!'));
+
 });
 
 module.exports = startDbPromise;

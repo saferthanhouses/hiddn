@@ -12,10 +12,21 @@ angular.module('hiddn.controllers', [])
   //});
 })
 
-.controller('TreasureCtrl', function($scope, $stateParams, TreasureFactory) {
+.controller('TreasureCtrl', function($scope, $stateParams, TreasureFactory, $cordovaGeolocation) {
 
 	$scope.hideTreasure = function(treasure) {
-		TreasureFactory.createTreasure({coords: '0000 0000', value: treasure});
+		$cordovaGeolocation.getCurrentPosition({timeout: 10000, enableHighAccuray: true})
+			.then(function(position){
+				var lat = position.coords.latitude, long = position.coords.longitude; 
+				console.log("hiding treasure at position", lat, long, "with", position.coords.accuracy, "accuracy");
+				TreasureFactory.createTreasure({coords: lat +' ' + long, value: treasure})
+					// .then(function(response){
+					// 	console.log("treasure successfully hidden at", "[", response.coords, "]")
+					// });
+			}, function(error){
+				// flash location error
+				console.error("couldn't get location.", error.message);
+			})
 	};
 })
 

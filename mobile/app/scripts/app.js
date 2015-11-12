@@ -5,9 +5,11 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config'])
+angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config', 'ngCordova'])
 
-.run(function($ionicPlatform) {
+.run(function($ionicPlatform, $cordovaGeolocation) {
+
+
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -20,6 +22,11 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
+    $cordovaGeolocation.getCurrentPosition({timeout: 10000, enableHighAccuray: false})
+      .then(function(position){
+        console.log("position", position);
+        // TreasureFactory.createTreasure({coords: '0000 0000', value: treasure});
+      })
   });
 })
 

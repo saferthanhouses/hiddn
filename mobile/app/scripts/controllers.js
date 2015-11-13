@@ -1,6 +1,6 @@
 angular.module('hiddn.controllers', [])
 
-.controller('HideCtrl', function($scope) {})
+.controller('TreasureCtrl', function($scope) {})
 
 .controller('MapCtrl', function($scope) {
   // With the new view caching in Ionic, Controllers are only called
@@ -10,6 +10,29 @@ angular.module('hiddn.controllers', [])
   //
   //$scope.$on('$ionicView.enter', function(e) {
   //});
+
+	document.addEventListener("deviceready", function() {
+	      var div = document.getElementById("map_canvas");
+
+	      // Initialize the map view
+	      map = plugin.google.maps.Map.getMap(div);
+
+	      // Wait until the map is ready status.
+	      // map.addEventListener(plugin.google.maps.event.MAP_READY, onMapReady);
+    }, false);
+
+	// function onMapReady() {
+ //      var button = document.getElementById("button");
+ //      button.addEventListener("click", onBtnClicked, false);
+ //    }
+
+ //    function onBtnClicked() {
+ //      map.showDialog();
+ //    }
+
+	// var div = document.getElementById('map_canvas')
+	// console.log("div", div);
+	// map = plugin.google.maps.Map.getMap(div);
 })
 
 .controller('HideCtrl', function($scope, $stateParams, TreasureFactory, $cordovaGeolocation) {

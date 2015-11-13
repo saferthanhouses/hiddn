@@ -73,16 +73,18 @@ angular.module('hiddn.controllers', [])
     	asyncMarkerPlacement(map, userPosition);
     }
 
+    function addTreasure(map){
+    	TreasureFactory.
+    }
+
     // when the device is ready load the position & the map.
 	document.addEventListener("deviceready", function() {
 
 		GeoFactory.getCurrentPosition().then(function(result){
-			// we should always be refining the position's accuracy - this will happen in the watch...
 			console.log("result (posObj) inside MapCtrl deviceready",result);
 			map = initializeMap(result);
-	  		console.log(map);
-			// can't add the user to the map until map ready.
-	  		map.addEventListener(plugin.google.maps.event.MAP_READY, function(map){ 
+	  		map.addEventListener(plugin.google.maps.event.MAP_READY, function(map){
+	  			addTreasure(map); 
 	  			startUserPosition(map, result)
 	  		});
 
@@ -95,21 +97,7 @@ angular.module('hiddn.controllers', [])
 
 })
 
-	// track path since.
-
-  //   	function showUserPosition(circle){
-  //   		map.setCenter(GeoFactory.position);
-  //   		circle.remove();
-  //   		map.addCircle({
-	 //    		center: GeoFactory.position,
-	 //    		radius: GeoFactory.accuray,
-	 //    		strokeColor: '#AA00FF',
-		// 	  	strokeWidth: 5,
-		// 	    fillColor : '#880000'
-		// 	}, function(circle) {
-		// 		map.circle = circle
-		// 	})
-	 //    };
+	// track path since to see if crossed icon path?
 
   //   	// // populate the map with icons.
   //   	// 	// treasures that are hidden - yours in a different colour.

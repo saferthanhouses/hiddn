@@ -61,35 +61,6 @@ angular.module('hiddn.services', [])
   })
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 .factory('Map', function($cordovaGeolocation) {
    
 })

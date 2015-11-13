@@ -1,67 +1,98 @@
 angular.module('hiddn.services', [])
 
-.factory('Map', function() {
-  // Might use a resource here that returns a JSON array
+  .factory('GeoFactory', function($cordovaGeolocation, $rootScope) {
 
-  // Some fake testing data
-  // var chats = [{
-  //   id: 0,
-  //   name: 'Ben Sparrow',
-  //   lastText: 'You on your way?',
-  //   face: 'img/ben.png'
-  // }, {
-  //   id: 1,
-  //   name: 'Max Lynx',
-  //   lastText: 'Hey, it\'s me',
-  //   face: 'img/max.png'
-  // }, {
-  //   id: 2,
-  //   name: 'Adam Bradleyson',
-  //   lastText: 'I should buy a boat',
-  //   face: 'img/adam.jpg'
-  // }, {
-  //   id: 3,
-  //   name: 'Perry Governor',
-  //   lastText: 'Look at my mukluks!',
-  //   face: 'img/perry.png'
-  // }, {
-  //   id: 4,
-  //   name: 'Mike Harrington',
-  //   lastText: 'This is wicked good ice cream.',
-  //   face: 'img/mike.png'
-  // }];
+      document.addEventListener('deviceready', function(){
+         var watch = $cordovaGeolocation.watchPosition({enableHighAccuray: true });
+         watch.then(
+          null,
+          function(err) {
+            console.error(err);
+          },
+          function(position) {
+            setGeoFactory(position);
+            $rootScope.$emit('userLocationChanged');
+            console.log("position inside GeoF:deviceready:watchPosition", position)
+        });
+      })
 
-  // return {
-  //   all: function() {
-  //     return chats;
-  //   },
-  //   remove: function(chat) {
-  //     chats.splice(chats.indexOf(chat), 1);
-  //   },
-  //   get: function(chatId) {
-  //     for (var i = 0; i < chats.length; i++) {
-  //       if (chats[i].id === parseInt(chatId)) {
-  //         return chats[i];
-  //       }
-  //     }
-  //     return null;
-  //   }
-  // };
+      var GeoFactory = {};
+
+      function setGeoFactory(position){
+        GeoFactory.lat = position.coords.latitude;
+        GeoFactory.long = position.coords.longitude;
+        GeoFactory.position = [GeoFactory.lat, GeoFactory.long];
+        GeoFactory.accuracy = position.coords.accuracy;
+      }
+
+      GeoFactory.getCurrentPosition = function(){
+        return $cordovaGeolocation.getCurrentPosition({timeout:10000, enableHighAccuray:true})
+          .then(function(position){
+            console.log("position in GeoFactory.getCurrentPosition", position);
+            var result = {};
+            result.lat = position.coords.latitude;
+            result.long = position.coords.longitude; 
+            result.accuray = position.coords.accuracy;
+            setGeoFactory(position);
+            console.log("result in GeoFactory.getCurrentPosition", result);            
+            return result;
+          }, function(error){
+            // flash! Could not get position, trying to reconnect ..
+            console.error("Error getting position")
+            return error;
+          })
+      }
+
+      GeoFactory.watchCurrentPosition = function(){
+
+        // function succesFunc(position) {
+        //   setGeoFactory(position);
+        //   cb();
+        // }
+
+        // function errorFunc(error){
+        //   console.error(error);
+        // }
+
+        return $cordovaGeolocation.watchPosition({enableHighAccuray: true })
+      }
+
+      return GeoFactory;
+  })
+
+
+.factory('Map', function($cordovaGeolocation) {
+   
 })
+
 .factory('TreasureFactory', function($http, ENV){
 
-  var Factory = {}
+  var TreasureFactory = {}
 
-  Factory.createTreasure = function(treasure){
+  TreasureFactory.createTreasure = function(treasure){
     return $http.post(ENV.apiEndpoint + 'api/treasure/', treasure)
       .then(function(response){
         console.log("Treasure successfully hidden at", response.data.coords);
         return response.data;
       }, function(error){
-        return error;
+        console.error(error);
       })
   }
 
-  return Factory;
+  TreasureFactory.getAllTreasure = function(){
+    return $http.get(ENV.apiEndpoint + 'api/treasure/')
+      .then(function(response){
+        return response.data;
+      }, function(error){
+        console.error(error);
+      })
+  }
+
+  //
+  TreasureFactory.loadTreasure = function(){
+
+  }
+
+  return TreasureFactory;
 
 })

@@ -22,11 +22,11 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
-    $cordovaGeolocation.getCurrentPosition({timeout: 10000, enableHighAccuray: false})
-      .then(function(position){
-        console.log("position", position);
-        // TreasureFactory.createTreasure({coords: '0000 0000', value: treasure});
-      })
+    // $cordovaGeolocation.getCurrentPosition({timeout: 10000, enableHighAccuray: false})
+    //   .then(function(position){
+    //     console.log("position", position);
+    //     // TreasureFactory.createTreasure({coords: '0000 0000', value: treasure});
+    //   })
   });
 })
 
@@ -63,8 +63,14 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
       'tab-map': {
         templateUrl: 'templates/tab-map.html',
         controller: 'MapCtrl'
-      }
+      } 
     }
+    // },
+    // resolve: {
+    //   positionObj: function(GeoFactory){
+    //     return GeoFactory.getCurrentPosition();
+    //   }
+    // }
   })
 
   .state('tab.treasure', {

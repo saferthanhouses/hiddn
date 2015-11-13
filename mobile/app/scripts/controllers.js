@@ -30,6 +30,19 @@ angular.module('hiddn.controllers', [])
 		return d.promise; 
 	}
 
+	function asyncTreasureMarkerPlacement (map, treasurePosition){
+		var d = $q.defer();
+		var treasurePos = new plugin.google.maps.LatLng(treasurePosition.lat, treasurePosition.long);
+		map.addMarker({
+    		position: treasurePos,
+    		icon: 'yellow'
+		}, function(marker){
+				d.resolve(marker);
+		});
+
+		return d.promise; 
+	}
+
 
     function initializeMap(positionObj){
 		// // if we have the position - run the map update
@@ -55,29 +68,45 @@ angular.module('hiddn.controllers', [])
     		console.log("successfully placed circle");
 
     		$rootScope.$on('userLocationChanged', function(){
+    			console.log("is the circle still visible in here?", circle);
     			console.log("userLocationChanged event heard!");
-	    		updateUserPosition(map, circle);
+	    		updateUserPosition(circle);
 				    			
 		    })
     	})
     }
 
-    // $rootScope.$on('userLocationChanged', function(){
-    // 	console.log("userLocationChanged event heard!");
-    // })
+    function getRadius(acc){
+    	// get an actual rep here ...
+    	return acc;
+    }
 
-    // // how to update user position? event?
+    // user position animation?
+
+    // treasure position animation?
+
     function updateUserPosition(map, circle){
-    	circle.remove();
-    	userPosition = {lat: GeoFactory.lat, long: GeoFactory.long}
-    	asyncMarkerPlacement(map, userPosition);
+    	var newCenter = new plugin.google.maps.LatLng(GeoFactory.lat, GeoFactory.long)
+    	circle.center = newCenter;
+    	circle.radius = getRadius(GeoFactory.accuracy);
     }
 
     function addTreasure(map){
-    	TreasureFactory.
+    	TreasureFactory.getAllTreasure()
+    		.then(function(treasures){
+    			console.log("MapCtrl:addTreasure:treasures:", treasures);
+    			treasures.forEach(function(treasure){
+    				t_coords = treasure.coords.split(' ');
+    				treasurePosition = {lat: t_coords[0], long: t_coords[1]};
+    				asyncTreasureMarkerPlacement(map, treasurePosition);
+    			})
+    		}, function(error){
+    			console.error(error);
+    		})
     }
 
-    // when the device is ready load the position & the map.
+    // 	#########  START START START ################################################
+    // ######### when the device is ready load the position & the map. ###########
 	document.addEventListener("deviceready", function() {
 
 		GeoFactory.getCurrentPosition().then(function(result){

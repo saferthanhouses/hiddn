@@ -14,7 +14,7 @@ angular.module('hiddn.controllers', [])
     var div = document.getElementById("map_canvas");
     var map;
 
-	function asyncMarkerPlacement (map, userLocationChangePosition){
+	function asyncMarkerPlacement (map, userPosition){
 		var d = $q.defer();
 		var userPos = new plugin.google.maps.LatLng(userPosition.lat, userPosition.long);
 		map.addCircle({

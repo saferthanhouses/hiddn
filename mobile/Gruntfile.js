@@ -43,7 +43,7 @@ module.exports = function (grunt) {
         constants: {
           ENV: {
             name: 'development',
-            apiEndpoint: 'http://192.168.3.96:1337/'
+            apiEndpoint: 'https://floating-oasis-1645.herokuapp.com/'
           }
         }
       },
@@ -51,7 +51,7 @@ module.exports = function (grunt) {
         constants: {
           ENV: {
             name: 'production',
-            apiEndpoint: 'http://192.168.3.96:1337/'
+            apiEndpoint: 'https://floating-oasis-1645.herokuapp.com/'
           }
         }
       }

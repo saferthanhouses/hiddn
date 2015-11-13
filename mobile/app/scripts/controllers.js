@@ -2,7 +2,7 @@ angular.module('hiddn.controllers', [])
 
 .controller('TreasureCtrl', function($scope) {})
 
-.controller('MapCtrl', function($scope, $cordovaGeolocation, TreasureFactory, GeoFactory, $q) {
+.controller('MapCtrl', function($scope, $cordovaGeolocation, TreasureFactory, GeoFactory, $q, $rootScope) {
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
   // To listen for when this page is active (for example, to refresh data),
@@ -53,17 +53,29 @@ angular.module('hiddn.controllers', [])
 
     	asyncMarkerPlacement(map, userPosition).then(function(circle){
     		console.log("successfully placed circle");
+
+    		$rootScope.$on('userLocationChanged', function(){
+    			console.log("userLocationChanged event heard!");
+	    		updateUserPosition(map, circle);
+				    			
+		    })
     	})
+    }
+
+    // $rootScope.$on('userLocationChanged', function(){
+    // 	console.log("userLocationChanged event heard!");
+    // })
+
+    // // how to update user position? event?
+    function updateUserPosition(map, circle){
+    	circle.remove();
+    	userPosition = {lat: GeoFactory.lat, long: GeoFactory.long}
+    	asyncMarkerPlacement(map, userPosition);
     }
 
     // when the device is ready load the position & the map.
 	document.addEventListener("deviceready", function() {
 
-		// ensure we have position information when the app starts
-
-		// if position is not good, attempt to get more accurate position?
-	    	// what is a bad level of positoin accuracy?
-			// wait for the position
 		GeoFactory.getCurrentPosition().then(function(result){
 			// we should always be refining the position's accuracy - this will happen in the watch...
 			console.log("result (posObj) inside MapCtrl deviceready",result);
@@ -82,6 +94,8 @@ angular.module('hiddn.controllers', [])
 
 
 })
+
+	// track path since.
 
   //   	function showUserPosition(circle){
   //   		map.setCenter(GeoFactory.position);

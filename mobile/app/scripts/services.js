@@ -1,12 +1,19 @@
 angular.module('hiddn.services', [])
 
-  .factory('GeoFactory', function($cordovaGeolocation) {
+  .factory('GeoFactory', function($cordovaGeolocation, $rootScope) {
 
       document.addEventListener('deviceready', function(){
-         $cordovaGeolocation.watchPosition(function(position) { console.log("watchPosition", position)}, 
-          function(error){ console.error(error)}, 
-          {enableHighAccuray: true }
-          )
+         var watch = $cordovaGeolocation.watchPosition({enableHighAccuray: true });
+         watch.then(
+          null,
+          function(err) {
+            console.error(err);
+          },
+          function(position) {
+            setGeoFactory(position);
+            $rootScope.$emit('userLocationChanged');
+            console.log("position inside GeoF:deviceready:watchPosition", position)
+        });
       })
 
       var GeoFactory = {};
@@ -36,18 +43,18 @@ angular.module('hiddn.services', [])
           })
       }
 
-      GeoFactory.watchCurrentPosition = function(cb){
+      GeoFactory.watchCurrentPosition = function(){
 
-        function succesFunc(position) {
-          setGeoFactory(position);
-          cb();
-        }
+        // function succesFunc(position) {
+        //   setGeoFactory(position);
+        //   cb();
+        // }
 
-        function errorFunc(error){
-          console.error(error);
-        }
+        // function errorFunc(error){
+        //   console.error(error);
+        // }
 
-        return $cordovaGeolocation.watchPosition(successFunc, errorFunc, {enableHighAccuray: true })
+        return $cordovaGeolocation.watchPosition({enableHighAccuray: true })
       }
 
       return GeoFactory;

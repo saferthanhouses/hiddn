@@ -19,7 +19,7 @@ angular.module('hiddn.controllers', [])
 		var userPos = new plugin.google.maps.LatLng(userPosition.lat, userPosition.long);
 		map.addCircle({
     		center: userPos,
-    		radius: userPosition.accuray,
+    		radius: userPosition.accuracy,
     		strokeColor: '#AA00FF',
 		  	strokeWidth: 5,
 		    fillColor : '#880000'
@@ -65,12 +65,9 @@ angular.module('hiddn.controllers', [])
     	var userPos = new plugin.google.maps.LatLng(userPosition.lat, userPosition.long);
 
     	asyncMarkerPlacement(map, userPosition).then(function(circle){
-    		console.log("successfully placed circle");
 
     		$rootScope.$on('userLocationChanged', function(){
-    			console.log("is the circle still visible in here?", circle);
-    			console.log("userLocationChanged event heard!");
-	    		updateUserPosition(circle);
+	    		updateUserPosition(map, circle);
 				    			
 		    })
     	})
@@ -86,12 +83,13 @@ angular.module('hiddn.controllers', [])
     // treasure position animation?
 
     function updateUserPosition(map, circle){
+    	console.log("updating user position ...", GeoFactory.position, GeoFactory.accuracy);
     	var newCenter = new plugin.google.maps.LatLng(GeoFactory.lat, GeoFactory.long)
     	circle.center = newCenter;
     	circle.radius = getRadius(GeoFactory.accuracy);
     }
 
-    function addTreasure(map){
+    function getTreasure(map){
     	TreasureFactory.getAllTreasure()
     		.then(function(treasures){
     			console.log("MapCtrl:addTreasure:treasures:", treasures);
@@ -105,15 +103,15 @@ angular.module('hiddn.controllers', [])
     		})
     }
 
-    // 	#########  START START START ################################################
+    // 	############  START START START ############################################
     // ######### when the device is ready load the position & the map. ###########
 	document.addEventListener("deviceready", function() {
 
 		GeoFactory.getCurrentPosition().then(function(result){
-			console.log("result (posObj) inside MapCtrl deviceready",result);
+			//console.log("result (posObj) inside MapCtrl deviceready",result);
 			map = initializeMap(result);
 	  		map.addEventListener(plugin.google.maps.event.MAP_READY, function(map){
-	  			addTreasure(map); 
+	  			getTreasure(map); 
 	  			startUserPosition(map, result)
 	  		});
 

@@ -9,6 +9,9 @@ var schema = new mongoose.Schema({
     password: {
         type: String
     },
+    found: {
+        type: {type: mongoose.Schema.Types.ObjectId, ref: 'User'}
+    },
     salt: {
         type: String
     },
@@ -23,7 +26,7 @@ var schema = new mongoose.Schema({
     },
     google: {
         id: String
-    }
+    },
 });
 
 // generateSalt, encryptPassword and the pre 'save' and 'correctPassword' operations

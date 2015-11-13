@@ -9,5 +9,8 @@
     </author>
     <content src="index.html" />
     <access origin="*" />
-    <allow-navigation href="http://*/*" />
+    <allow-navigation href="*" />
+    <feature name="Geolocation">
+        <param name="android-package" value="org.apache.cordova.GeoBroker" />
+    </feature>
 </widget>

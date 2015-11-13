@@ -2,20 +2,6 @@ angular.module('hiddn.services', [])
 
   .factory('GeoFactory', function($cordovaGeolocation, $rootScope) {
 
-      document.addEventListener('deviceready', function(){
-         var watch = $cordovaGeolocation.watchPosition({enableHighAccuray: true });
-         watch.then(
-          null,
-          function(err) {
-            console.error(err);
-          },
-          function(position) {
-            setGeoFactory(position);
-            $rootScope.$emit('userLocationChanged');
-            console.log("position inside GeoF:deviceready:watchPosition", position)
-        });
-      })
-
       var GeoFactory = {};
 
       function setGeoFactory(position){
@@ -32,7 +18,7 @@ angular.module('hiddn.services', [])
             var result = {};
             result.lat = position.coords.latitude;
             result.long = position.coords.longitude; 
-            result.accuray = position.coords.accuracy;
+            result.accuracy = position.coords.accuracy;
             setGeoFactory(position);
             console.log("result in GeoFactory.getCurrentPosition", result);            
             return result;
@@ -57,6 +43,22 @@ angular.module('hiddn.services', [])
         return $cordovaGeolocation.watchPosition({enableHighAccuray: true })
       }
 
+
+      document.addEventListener('deviceready', function(){
+         var watch = $cordovaGeolocation.watchPosition({enableHighAccuray: true });
+         watch.then(
+          null,
+          function(err) {
+            console.error(err);
+          },
+          function(position) {
+            setGeoFactory(position);
+            $rootScope.$emit('userLocationChanged');
+            // console.log("position inside GeoF:deviceready:watchPosition", position)
+        });
+      })
+
+
       return GeoFactory;
   })
 
@@ -69,10 +71,16 @@ angular.module('hiddn.services', [])
 
   var TreasureFactory = {}
 
+  TreasureFactory.found = []
+
   TreasureFactory.createTreasure = function(treasure){
     return $http.post(ENV.apiEndpoint + 'api/treasure/', treasure)
       .then(function(response){
         console.log("Treasure successfully hidden at", response.data.coords);
+        if (!response.data){
+          // do something
+          console.error("no data returned");
+        }
         return response.data;
       }, function(error){
         console.error(error);
@@ -80,19 +88,27 @@ angular.module('hiddn.services', [])
   }
 
   TreasureFactory.getAllTreasure = function(){
+
+    // return $http.get('http://blog.teamtreehouse.com/api/')
+
     return $http.get(ENV.apiEndpoint + 'api/treasure/')
       .then(function(response){
+        console.log("TF:getAllTreasure:response", response);
         return response.data;
       }, function(error){
         console.error(error);
+        return error
       })
   }
 
   //
-  TreasureFactory.loadTreasure = function(){
-
+  TreasureFactory.loadFoundTreasure = function(){
+    $http.get
   }
 
   return TreasureFactory;
 
 })
+
+// if the user is within a certain distance of the treasure,
+// remove the treasure from the 

@@ -63,8 +63,14 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
       'tab-map': {
         templateUrl: 'templates/tab-map.html',
         controller: 'MapCtrl'
-      }
+      } 
     }
+    // },
+    // resolve: {
+    //   positionObj: function(GeoFactory){
+    //     return GeoFactory.getCurrentPosition();
+    //   }
+    // }
   })
 
   .state('tab.treasure', {

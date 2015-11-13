@@ -2,7 +2,9 @@
   "name": "Hiddn",
   "version": "0.0.0",
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "cordova-plugin-whitelist": "^1.0.0"
+  },
   "devDependencies": {
     "grunt": "~0.4.5",
     "glob": "~4.3.5",

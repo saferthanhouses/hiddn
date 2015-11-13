@@ -14,7 +14,16 @@ angular.module('hiddn.services', [])
         console.log("Treasure successfully hidden at", response.data.coords);
         return response.data;
       }, function(error){
-        return error;
+        console.error(error);
+      })
+  }
+
+  Factory.getAllTreasure = function(){
+    return $http.get(ENV.apiEndpoint + 'api/treasure/')
+      .then(function(response){
+        return response.data;
+      }, function(error){
+        console.error(error);
       })
   }
 

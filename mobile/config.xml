@@ -9,7 +9,5 @@
     </author>
     <content src="index.html" />
     <access origin="*" />
+    <allow-navigation href="http://*/*" />
 </widget>
-
-AIzaSyCdZW0MNKm3cE0jxa6EkZThuoRxNzAENs4
-AIzaSyAKf59QWYUGN890EAY0CncMk_dgldSFcpg

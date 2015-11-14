@@ -163,4 +163,30 @@ angular.module('hiddn.controllers', [])
 })
 
 .controller('UserCtrl', function($scope) {
-});
+})
+
+.controller('AuthCtrl', function($scope){
+
+})
+
+.controller('LoginCtrl', function($scope, $state, AuthService){
+		$scope.user = {};
+		$scope.login = function(){
+			var creds = {email: $scope.user.email, password: $scope.user.password};
+			AuthService.login(creds).then(function(){
+				$state.go('tab.map');
+				// flash successful login.
+			})
+		}
+})
+
+.controller('SignupCtrl', function($scope, AuthService){
+		console.log("inside signup");
+		$scope.user = {};
+		$scope.login = function(){
+			var creds = {email: $scope.user.email, password: $scope.user.password};
+			AuthService.login(creds).then(function(){
+				$state.go('map');
+			})
+		}
+})

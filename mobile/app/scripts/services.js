@@ -103,11 +103,20 @@ angular.module('hiddn.services', [])
 
   //
   TreasureFactory.loadFoundTreasure = function(){
-    $http.get
+    // $http.get
   }
 
   return TreasureFactory;
 
+})
+
+.constant('AUTH_EVENTS', {
+        loginSuccess: 'auth-login-success',
+        loginFailed: 'auth-login-failed',
+        logoutSuccess: 'auth-logout-success',
+        sessionTimeout: 'auth-session-timeout',
+        notAuthenticated: 'auth-not-authenticated',
+        notAuthorized: 'auth-not-authorized'
 })
 
 .factory('AuthInterceptor', function ($rootScope, $q, AUTH_EVENTS) {
@@ -125,7 +134,34 @@ angular.module('hiddn.services', [])
         };
 })
 
-.service('AuthService', function ($http, Session, $rootScope, AUTH_EVENTS, $q) {
+.service('Session', function ($rootScope, AUTH_EVENTS) {
+
+        var self = this;
+
+        $rootScope.$on(AUTH_EVENTS.notAuthenticated, function () {
+            self.destroy();
+        });
+
+        $rootScope.$on(AUTH_EVENTS.sessionTimeout, function () {
+            self.destroy();
+        });
+
+        this.id = null;
+        this.user = null;
+
+        this.create = function (sessionId, user) {
+            this.id = sessionId;
+            this.user = user;
+        };
+
+        this.destroy = function () {
+            this.id = null;
+            this.user = null;
+        };
+
+})
+
+.service('AuthService', function ($http, Session, $rootScope, AUTH_EVENTS, $q, ENV) {
 
         function onSuccessfulLogin(response) {
             var data = response.data;
@@ -157,14 +193,14 @@ angular.module('hiddn.services', [])
             // Make request GET /session.
             // If it returns a user, call onSuccessfulLogin with the response.
             // If it returns a 401 response, we catch it and instead resolve to null.
-            return $http.get('/session').then(onSuccessfulLogin).catch(function () {
+            return $http.get(ENV.apiEndpoint + '/session').then(onSuccessfulLogin).catch(function () {
                 return null;
             });
 
         };
 
         this.login = function (credentials) {
-            return $http.post('/login', credentials)
+            return $http.post(ENV.apiEndpoint + 'login', credentials)
                 .then(onSuccessfulLogin)
                 .catch(function () {
                     return $q.reject({ message: 'Invalid login credentials.' });
@@ -180,31 +216,6 @@ angular.module('hiddn.services', [])
 
 })
 
-.service('Session', function ($rootScope, AUTH_EVENTS) {
 
-        var self = this;
-
-        $rootScope.$on(AUTH_EVENTS.notAuthenticated, function () {
-            self.destroy();
-        });
-
-        $rootScope.$on(AUTH_EVENTS.sessionTimeout, function () {
-            self.destroy();
-        });
-
-        this.id = null;
-        this.user = null;
-
-        this.create = function (sessionId, user) {
-            this.id = sessionId;
-            this.user = user;
-        };
-
-        this.destroy = function () {
-            this.id = null;
-            this.user = null;
-        };
-
-})
 
 

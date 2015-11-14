@@ -7,7 +7,29 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config', 'ngCordova'])
 
-.run(function($ionicPlatform, $cordovaGeolocation) {
+.run(function($ionicPlatform, $cordovaGeolocation, AuthService, $rootScope, $state, Session) {
+
+    $rootScope.$on('$stateChangeStart', function (event, toState, toParams) {
+
+      console.log("toState", toState);
+ 
+      AuthService.getLoggedInUser().then(function (user) {
+          console.log("AuthService:getLoggedInUser:user", user);
+          // If a user is retrieved, then renavigate to the destination
+            // or redirect to signup - this is not the most modular / elegant solution
+          // (the second time, AuthService.isAuthenticated() will work)
+          // otherwise, if no user is logged in, go to "login" state.
+          if (user || toState.name=="auth.sigup") {
+              $state.go('toState');
+          } else {
+              $state.go('auth.login');
+          }
+      });
+    })
+
+      // on app load  - check if the user is logged in.
+      // if not, pop up a login/signup modal
+      // with a 'continue as a guest user button on the bottom'
 
 
   $ionicPlatform.ready(function() {
@@ -22,11 +44,60 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
-    // $cordovaGeolocation.getCurrentPosition({timeout: 10000, enableHighAccuray: false})
-    //   .then(function(position){
-    //     console.log("position", position);
-    //     // TreasureFactory.createTreasure({coords: '0000 0000', value: treasure});
-    //   })
+
+    //  AuthService.getLoggedInUser().then(function (user) {
+    //     console.log("AuthService:getLoggedInUser:user", user);
+    //     // If a user is retrieved, then renavigate to the destination
+    //     // (the second time, AuthService.isAuthenticated() will work)
+    //     // otherwise, if no user is logged in, go to "login" state.
+    //     if (user) {
+    //         $state.go(toState.name, toParams);
+    //     } else {
+    //         console.log("are we getting to login");
+    //         $state.go('login');
+    //     }
+    // });
+
+
+    // $rootScope.$on('$stateChangeStart', function (event, toState, toParams) {
+
+    //     console.log("$stateChangeStart", toState);
+
+    //     if (!destinationStateRequiresAuth(toState)) {
+    //         // The destination state does not require authentication
+    //         // Short circuit with return.
+    //         console.log("inside $stateChangeStart:destin...")
+    //         return;
+    //     }
+
+
+
+    //     if (AuthService.isAuthenticated()) {
+    //         // The user is authenticated.
+    //         // Short circuit with return.
+    //         console.log("inside $stateChangeStart:isAuth...")
+    //         return;
+    //     }
+
+    //     // Cancel navigating to new state.
+    //     event.preventDefault();
+
+        // AuthService.getLoggedInUser().then(function (user) {
+        //     console.log("AuthService:getLoggedInUser:user", user);
+        //     // If a user is retrieved, then renavigate to the destination
+        //     // (the second time, AuthService.isAuthenticated() will work)
+        //     // otherwise, if no user is logged in, go to "login" state.
+        //     if (user) {
+        //         $state.go(toState.name, toParams);
+        //     } else {
+        //         console.log("are we getting to login");
+        //         $state.go('auth-login');
+        //     }
+        // });
+
+    //  });
+    // and redirect to authentication in any page?
+
   });
 })
 
@@ -39,7 +110,33 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
   $stateProvider
 
   // setup an abstract state for the tabs directive
-    .state('tab', {
+
+   .state('auth', {
+    url: '/auth',
+    templateUrl: 'templates/auth.html',
+    abstract: true
+  })
+
+   .state('auth.signup', {
+    url: '/signup',
+    views: {
+      'auth-signup': {
+        templateUrl: 'templates/auth-signup.html',
+        controller: 'SignupCtrl'
+      }
+    }
+  }) 
+  .state('auth.login', {
+    url: '/login',
+    views: {
+      'auth-login': {
+        templateUrl: 'templates/auth-login.html',
+        controller: 'LoginCtrl'
+      }
+    }
+  })
+
+  .state('tab', {
     url: '/tab',
     abstract: true,
     templateUrl: 'templates/tabs.html'
@@ -63,8 +160,11 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
       'tab-map': {
         templateUrl: 'templates/tab-map.html',
         controller: 'MapCtrl'
-      } 
-    }
+      },
+    },
+    data: {
+        authenticate: true
+      }   
     // },
     // resolve: {
     //   positionObj: function(GeoFactory){
@@ -91,7 +191,9 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
         controller: 'UserCtrl'
       }
     }
-  });
+  })
+
+ 
 
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/tab/map');

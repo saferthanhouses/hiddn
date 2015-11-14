@@ -19,12 +19,25 @@ angular.module('hiddn.controllers', [])
 		var userPos = new plugin.google.maps.LatLng(userPosition.lat, userPosition.long);
 		map.addCircle({
     		center: userPos,
-    		radius: userPosition.accuray,
+    		radius: userPosition.accuracy,
     		strokeColor: '#AA00FF',
 		  	strokeWidth: 5,
 		    fillColor : '#880000'
 		}, function(circle){
 				d.resolve(circle);
+		});
+
+		return d.promise; 
+	}
+
+	function asyncTreasureMarkerPlacement (map, treasurePosition){
+		var d = $q.defer();
+		var treasurePos = new plugin.google.maps.LatLng(treasurePosition.lat, treasurePosition.long);
+		map.addMarker({
+    		position: treasurePos,
+    		icon: 'yellow'
+		}, function(marker){
+				d.resolve(marker);
 		});
 
 		return d.promise; 
@@ -52,39 +65,53 @@ angular.module('hiddn.controllers', [])
     	var userPos = new plugin.google.maps.LatLng(userPosition.lat, userPosition.long);
 
     	asyncMarkerPlacement(map, userPosition).then(function(circle){
-    		console.log("successfully placed circle");
 
     		$rootScope.$on('userLocationChanged', function(){
-    			console.log("userLocationChanged event heard!");
 	    		updateUserPosition(map, circle);
 				    			
 		    })
     	})
     }
 
-    // $rootScope.$on('userLocationChanged', function(){
-    // 	console.log("userLocationChanged event heard!");
-    // })
+    function getRadius(acc){
+    	// get an actual rep here ...
+    	return acc;
+    }
 
-    // // how to update user position? event?
+    // user position animation?
+
+    // treasure position animation?
+
     function updateUserPosition(map, circle){
-    	circle.remove();
-    	userPosition = {lat: GeoFactory.lat, long: GeoFactory.long}
-    	asyncMarkerPlacement(map, userPosition);
+    	console.log("updating user position ...", GeoFactory.position, GeoFactory.accuracy);
+    	var newCenter = new plugin.google.maps.LatLng(GeoFactory.lat, GeoFactory.long)
+    	circle.center = newCenter;
+    	circle.radius = getRadius(GeoFactory.accuracy);
     }
 
-    function addTreasure(map){
-    	TreasureFactory.
+    function getTreasure(map){
+    	TreasureFactory.getAllTreasure()
+    		.then(function(treasures){
+    			console.log("MapCtrl:addTreasure:treasures:", treasures);
+    			treasures.forEach(function(treasure){
+    				t_coords = treasure.coords.split(' ');
+    				treasurePosition = {lat: t_coords[0], long: t_coords[1]};
+    				asyncTreasureMarkerPlacement(map, treasurePosition);
+    			})
+    		}, function(error){
+    			console.error(error);
+    		})
     }
 
-    // when the device is ready load the position & the map.
+    // 	############  START START START ############################################
+    // ######### when the device is ready load the position & the map. ###########
 	document.addEventListener("deviceready", function() {
 
 		GeoFactory.getCurrentPosition().then(function(result){
-			console.log("result (posObj) inside MapCtrl deviceready",result);
+			//console.log("result (posObj) inside MapCtrl deviceready",result);
 			map = initializeMap(result);
 	  		map.addEventListener(plugin.google.maps.event.MAP_READY, function(map){
-	  			addTreasure(map); 
+	  			getTreasure(map); 
 	  			startUserPosition(map, result)
 	  		});
 
@@ -136,4 +163,30 @@ angular.module('hiddn.controllers', [])
 })
 
 .controller('UserCtrl', function($scope) {
-});
+})
+
+.controller('AuthCtrl', function($scope){
+
+})
+
+.controller('LoginCtrl', function($scope, $state, AuthService){
+		$scope.user = {};
+		$scope.login = function(){
+			var creds = {email: $scope.user.email, password: $scope.user.password};
+			AuthService.login(creds).then(function(){
+				$state.go('tab.map');
+				// flash successful login.
+			})
+		}
+})
+
+.controller('SignupCtrl', function($scope, AuthService){
+		console.log("inside signup");
+		$scope.user = {};
+		$scope.login = function(){
+			var creds = {email: $scope.user.email, password: $scope.user.password};
+			AuthService.login(creds).then(function(){
+				$state.go('map');
+			})
+		}
+})

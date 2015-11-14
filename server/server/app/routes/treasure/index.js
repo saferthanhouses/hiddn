@@ -28,6 +28,7 @@ router.param('id', function(req, res, next, id){
 
 
 router.get('/', function (req, res, next) {
+	console.log("TreasureRouter:Get/:session?", req.session);
 	Treasure.find({}).then(function(treasure){
 		console.log("Treaure", treasure);
 		res.json(treasure)

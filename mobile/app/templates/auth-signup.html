@@ -1,0 +1,14 @@
+<ion-view view-title="Singup">
+ <ion-content class="padding">
+    <label class="item item-input item-floating-label">
+      <span class="input-label">Email Address</span>
+      <input ng-model="user.email" type="text" placeholder="Email Address">
+    </label>
+    <label class="item item-input item-floating-label">
+      <span class="input-label">Email Address</span>
+      <input ng-model="user.password" type="password" placeholder="password">
+    </label>
+    <!-- why is ng-model not working? -->
+     <button ng-click="signup()" class="button button-assertive">Signup</button>
+  </ion-content>
+</ion-view>

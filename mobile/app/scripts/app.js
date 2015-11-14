@@ -10,8 +10,6 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
 .run(function($ionicPlatform, $cordovaGeolocation, AuthService, $rootScope, $state, Session) {
 
     $rootScope.$on('$stateChangeStart', function (event, toState, toParams) {
-
-      console.log("toState", toState);
  
       AuthService.getLoggedInUser().then(function (user) {
           console.log("AuthService:getLoggedInUser:user", user);
@@ -27,11 +25,6 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
       });
     })
 
-      // on app load  - check if the user is logged in.
-      // if not, pop up a login/signup modal
-      // with a 'continue as a guest user button on the bottom'
-
-
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -44,59 +37,6 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
-
-    //  AuthService.getLoggedInUser().then(function (user) {
-    //     console.log("AuthService:getLoggedInUser:user", user);
-    //     // If a user is retrieved, then renavigate to the destination
-    //     // (the second time, AuthService.isAuthenticated() will work)
-    //     // otherwise, if no user is logged in, go to "login" state.
-    //     if (user) {
-    //         $state.go(toState.name, toParams);
-    //     } else {
-    //         console.log("are we getting to login");
-    //         $state.go('login');
-    //     }
-    // });
-
-
-    // $rootScope.$on('$stateChangeStart', function (event, toState, toParams) {
-
-    //     console.log("$stateChangeStart", toState);
-
-    //     if (!destinationStateRequiresAuth(toState)) {
-    //         // The destination state does not require authentication
-    //         // Short circuit with return.
-    //         console.log("inside $stateChangeStart:destin...")
-    //         return;
-    //     }
-
-
-
-    //     if (AuthService.isAuthenticated()) {
-    //         // The user is authenticated.
-    //         // Short circuit with return.
-    //         console.log("inside $stateChangeStart:isAuth...")
-    //         return;
-    //     }
-
-    //     // Cancel navigating to new state.
-    //     event.preventDefault();
-
-        // AuthService.getLoggedInUser().then(function (user) {
-        //     console.log("AuthService:getLoggedInUser:user", user);
-        //     // If a user is retrieved, then renavigate to the destination
-        //     // (the second time, AuthService.isAuthenticated() will work)
-        //     // otherwise, if no user is logged in, go to "login" state.
-        //     if (user) {
-        //         $state.go(toState.name, toParams);
-        //     } else {
-        //         console.log("are we getting to login");
-        //         $state.go('auth-login');
-        //     }
-        // });
-
-    //  });
-    // and redirect to authentication in any page?
 
   });
 })

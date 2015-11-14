@@ -102,8 +102,15 @@ angular.module('hiddn.services', [])
   }
 
   //
-  TreasureFactory.loadFoundTreasure = function(){
-    // $http.get
+  TreasureFactory.loadFoundTreasure = function(userId){
+    return $http.get(ENV.apiEndpoint + 'api/users/' + userId + '/found')
+      .then(function(response){
+        console.log("TF:loadFoundTreasure:response", response);
+        return response.data;
+      }, function(error){
+        console.error(error);
+        return error
+      })
   }
 
   return TreasureFactory;

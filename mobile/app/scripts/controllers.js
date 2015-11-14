@@ -1,6 +1,14 @@
 angular.module('hiddn.controllers', [])
 
-.controller('TreasureCtrl', function($scope) {})
+.controller('TreasureCtrl', function($scope, TreasureFactory, Session) {
+	TreasureFactory.loadFoundTreasure(Session.user._id)
+		.then(function(treasures){
+			console.log("successful load")
+			$scope.treasures = treasures;
+		}, function(error){
+			console.error(error);
+		})
+})
 
 .controller('MapCtrl', function($scope, $cordovaGeolocation, TreasureFactory, GeoFactory, $q, $rootScope) {
   // With the new view caching in Ionic, Controllers are only called
@@ -81,6 +89,8 @@ angular.module('hiddn.controllers', [])
     // user position animation?
 
     // treasure position animation?
+
+    // game pause with variable gps? 
 
     function updateUserPosition(map, circle){
     	console.log("updating user position ...", GeoFactory.position, GeoFactory.accuracy);

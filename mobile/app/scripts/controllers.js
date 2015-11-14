@@ -87,6 +87,7 @@ angular.module('hiddn.controllers', [])
     	var newCenter = new plugin.google.maps.LatLng(GeoFactory.lat, GeoFactory.long)
     	circle.center = newCenter;
     	circle.radius = getRadius(GeoFactory.accuracy);
+    	console.log("MapCtrl:updateUserPosition:circle.radius", circle.radius);
     }
 
     function getTreasure(map){
@@ -106,52 +107,46 @@ angular.module('hiddn.controllers', [])
     // 	############  START START START ############################################
     // ######### when the device is ready load the position & the map. ###########
 	document.addEventListener("deviceready", function() {
+		$rootScope.$on('auth-login-success', function() {
+			GeoFactory.getCurrentPosition().then(function(result){
+				//console.log("result (posObj) inside MapCtrl deviceready",result);
+				map = initializeMap(result);
+		  		map.addEventListener(plugin.google.maps.event.MAP_READY, function(map){
+		  			getTreasure(map); 
+		  			startUserPosition(map, result)
+		  		});
 
-		GeoFactory.getCurrentPosition().then(function(result){
-			//console.log("result (posObj) inside MapCtrl deviceready",result);
-			map = initializeMap(result);
-	  		map.addEventListener(plugin.google.maps.event.MAP_READY, function(map){
-	  			getTreasure(map); 
-	  			startUserPosition(map, result)
-	  		});
-
-			}, function(error){
-				console.error("inside MapCtrl", error);
-			}
-		)
+				}, function(error){
+					console.error("inside MapCtrl", error);
+				}
+			)		
+		})
 	})
 
 
 })
 
-	// track path since to see if crossed icon path?
-
-  //   	// // populate the map with icons.
-  //   	// 	// treasures that are hidden - yours in a different colour.
-  //   	// 	// treasures that you've found
-  //   	// // how to restrict the number later on? Within the map view?
-  //   	// TreasureFactory.getAllTreasure().then(function(treasures){
-  //   	// 	console.log("treasures", treasures);
-  //   	// })
-
-  //       // call update user position.
-	 //    // if couldn't get gps information, do what?	    
-    // }, false);
 
 
-
-.controller('HideCtrl', function($scope, $stateParams, TreasureFactory, $cordovaGeolocation, GeoFactory) {
+.controller('HideCtrl', function($scope, $stateParams, TreasureFactory, $cordovaGeolocation, GeoFactory, Session) {
 
 	$scope.treasure = {value: ''}
 
 	$scope.hideTreasure = function(treasure) {
 		console.log("$scope.treasure?", $scope.treasure)
 		GeoFactory.getCurrentPosition().then(function(result){
-				console.log("hiding treasure at position", result.lat, result.long, "with", result.accuracy, "accuracy");
-				TreasureFactory.createTreasure({coords: result.lat +' ' + result.long, value: $scope.treasure.value})
+				
+				treasure = {
+					coords: result.lat +' ' + result.long, 
+					value: $scope.treasure.value,
+					hider: Session.user._id
+				};
+
+				TreasureFactory.createTreasure(treasure)
 					.then(function(){
 						$scope.treasure.value = "";
 					}, function(){
+						// flash?
 						console.error("error hiding treasure")
 					}
 				)

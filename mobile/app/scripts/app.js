@@ -7,18 +7,30 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config', 'ngCordova'])
 
-.run(function($ionicPlatform, $cordovaGeolocation, AuthService, $rootScope, $state, Session) {
+.run(function($ionicPlatform, $cordovaGeolocation, AuthService, $rootScope, $state) {
 
     $rootScope.$on('$stateChangeStart', function (event, toState, toParams) {
- 
+        console.log("toState", toState);
+
+        // if (AuthService.isAuthenticated()) {
+        //   // The user is authenticated.
+        //   // Short circuit with return.
+        //   return;
+        // }
+
+        // // Cancel navigating to new state.
+        // event.preventDefault();
+
+
       AuthService.getLoggedInUser().then(function (user) {
           console.log("AuthService:getLoggedInUser:user", user);
           // If a user is retrieved, then renavigate to the destination
             // or redirect to signup - this is not the most modular / elegant solution
           // (the second time, AuthService.isAuthenticated() will work)
           // otherwise, if no user is logged in, go to "login" state.
-          if (user || toState.name=="auth.sigup") {
-              $state.go('toState');
+          if (user || toState.name=="auth.signup") {
+            console.log("there is a user...");
+              $state.go(toState.name, toParams);
           } else {
               $state.go('auth.login');
           }

@@ -85,8 +85,8 @@ angular.module('hiddn.controllers', [])
     function updateUserPosition(map, circle){
     	console.log("updating user position ...", GeoFactory.position, GeoFactory.accuracy);
     	var newCenter = new plugin.google.maps.LatLng(GeoFactory.lat, GeoFactory.long)
-    	circle.center = newCenter;
-    	circle.radius = getRadius(GeoFactory.accuracy);
+    	circle.setCenter(newCenter);
+    	circle.setRadius(getRadius(GeoFactory.accuracy));
     	console.log("MapCtrl:updateUserPosition:circle.radius", circle.radius);
     }
 

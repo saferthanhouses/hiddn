@@ -9,14 +9,17 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
 
 .run(function($ionicPlatform, $cordovaGeolocation, AuthService, $rootScope, $state) {
 
+    console.log("inside run");
+
     $rootScope.$on('$stateChangeStart', function (event, toState, toParams) {
         console.log("toState", toState);
 
-        // if (AuthService.isAuthenticated()) {
-        //   // The user is authenticated.
-        //   // Short circuit with return.
-        //   return;
-        // }
+        if (AuthService.isAuthenticated()) {
+          // The user is authenticated.
+          // Short circuit with return.
+          console.log("user is authenticated");
+          return;
+        }
 
         // // Cancel navigating to new state.
         // event.preventDefault();
@@ -40,6 +43,8 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
+    console.log("inside ready");
+
     if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
       cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
       cordova.plugins.Keyboard.disableScroll(true);

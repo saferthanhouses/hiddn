@@ -65,8 +65,8 @@ angular.module('hiddn.controllers', [])
     	var userPos = new plugin.google.maps.LatLng(userPosition.lat, userPosition.long);
 
     	asyncMarkerPlacement(map, userPosition).then(function(circle){
-
     		$rootScope.$on('userLocationChanged', function(){
+    			console.log("inside user location change - circle", circle);
 	    		updateUserPosition(map, circle);
 				    			
 		    })
@@ -107,7 +107,7 @@ angular.module('hiddn.controllers', [])
     // 	############  START START START ############################################
     // ######### when the device is ready load the position & the map. ###########
 	document.addEventListener("deviceready", function() {
-		$rootScope.$on('auth-login-success', function() {
+		// $rootScope.$on('auth-login-success', function() {
 			GeoFactory.getCurrentPosition().then(function(result){
 				//console.log("result (posObj) inside MapCtrl deviceready",result);
 				map = initializeMap(result);
@@ -120,7 +120,7 @@ angular.module('hiddn.controllers', [])
 					console.error("inside MapCtrl", error);
 				}
 			)		
-		})
+		// })
 	})
 
 

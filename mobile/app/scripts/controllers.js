@@ -109,6 +109,10 @@ angular.module('hiddn.controllers', [])
 
     // game pause with variable gps? 
 
+    // reorganise mapLoad to go off of individual maps. If !mapName, org 
+
+    // organise by map on the found list...
+
     function updateUserPosition(map, circle){
     	console.log("updating user position ...", GeoFactory.position, GeoFactory.accuracy);
     	var newCenter = new plugin.google.maps.LatLng(GeoFactory.lat, GeoFactory.long)
@@ -117,18 +121,24 @@ angular.module('hiddn.controllers', [])
     	console.log("MapCtrl:updateUserPosition:circle.radius", circle.radius);
     }
 
-    function getTreasure(map){
-    	TreasureFactory.getAllTreasure()
-    		.then(function(treasures){
-    			console.log("MapCtrl:addTreasure:treasures:", treasures);
-    			console.log("MapCtrl:TreasureFactory.hiddenTreasure", TreasureFactory.hiddenTreasure);
-    			$scope.hiddenTreasure = TreasureFactory.hiddenTreasure;
-    			$scope.yourTreasure = TreasureFactory.yourTreasure;
-    			placeTreasures(map, TreasureFactory.hiddenTreasure);
-    		}, function(error){
-    			console.error(error);
-    		})
+    function getTreasure(map, treasureMap){
+    	if (!treasureMap){
+	    	TreasureFactory.getOpenTreasure()
+	    		.then(function(treasures){
+	    			console.log("MapCtrl:addTreasure:treasures:", treasures);
+	    			console.log("MapCtrl:TreasureFactory.hiddenTreasure", TreasureFactory.hiddenTreasure);
+	    			$scope.hiddenTreasure = TreasureFactory.hiddenTreasure;
+	    			$scope.yourTreasure = TreasureFactory.yourTreasure;
+	    			placeTreasures(map, TreasureFactory.hiddenTreasure);
+	    		}, function(error){
+	    			console.error(error);
+	    		})
+    	} else {
+    		// other maps
+
+    	}
     }
+
 
     function placeTreasures(map, treasures){
     	console.log("treasures", treasures)
@@ -156,8 +166,9 @@ angular.module('hiddn.controllers', [])
 	 		],
  			titleText: 'Choose A Map',
 			cancelText: 'Cancel',
- 			cancel: function() {
-      			hideSheet();
+ 			cancel:  
+ 			function() {
+      			console.log("cancel pressed");
     		},
  			buttonClicked: function(index) {
  				console.log("showMaps button:", index)
@@ -176,6 +187,12 @@ angular.module('hiddn.controllers', [])
 	 			MapFactory.getPublishedMaps(Session.user._id)
 	 		})
 	 		.then(function(){
+
+	 			console.log("allMaps", MapFactory.allMaps)
+
+	 			for (var map in MapFactory.publishedMaps){
+	 				options.buttons.push({text: "<i>Your Map</i>" + map})
+	 			}
 
 			 	for (var map in MapFactory.donatedMaps) {
 			 		options.buttons.push({text: map})

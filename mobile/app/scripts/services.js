@@ -55,12 +55,14 @@ angular.module('hiddn.services', [])
     var MapFactory = {};
     MapFactory.publishedMaps = {}
     MapFactory.donatedMaps = {}
+    MapFactory.allMaps = {}
 
     MapFactory.getDonatedMaps = function(userId) {
         return $http.get(ENV.apiEndpoint + 'api/users/' + userId + '/donatedMaps')
             .then(function(response){
                 response.data.forEach(function(m){
-                    MapFactory.donatedMaps[m.title] = m;
+                    MapFactory.donatedMaps[m.title] = m; // conflicting map names?
+                    MapFactory.allMaps[m.title] = m;
                 })
                 return response.data;
             })
@@ -70,7 +72,8 @@ angular.module('hiddn.services', [])
         $http.get(ENV.apiEndpoint + 'api/users/' + userId + '/publishedMaps')
             .then(function(response){
                 response.data.forEach(function(m){
-                    MapFactory.publishedMaps[m.title] = m;
+                     MapFactory.publishedMaps[m.title] = m;
+                     MapFactory.allMaps[m.title] = m;
                 })
                 return response.data;
             })
@@ -99,7 +102,7 @@ angular.module('hiddn.services', [])
       })
   }
 
-  TreasureFactory.getAllTreasure = function(){
+  TreasureFactory.getOpenTreasure = function(){
 
     return $http.get(ENV.apiEndpoint + 'api/treasure')
       .then(function(response){

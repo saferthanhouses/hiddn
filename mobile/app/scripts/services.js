@@ -51,8 +51,20 @@ angular.module('hiddn.services', [])
   })
 
 
-.factory('Map', function($cordovaGeolocation) {
-   
+.factory('MapFactory', function($cordovaGeolocation) {
+    var MapFactory = {};
+    MapFactory.publishedMaps = {}
+    MapFactory.donatedMaps = {}
+
+    MapFactory.getUserMaps = function() {
+        $http.get(ENV.apiEndpoint + 'api/users/' + userId + '/donatedMaps')
+            .then(function(response){
+                console.log(response);
+                // MapFactory.userMaps = response.data;
+            })
+    }
+
+    return MapFactory;
 })
 
 .factory('TreasureFactory', function($http, ENV, Session){

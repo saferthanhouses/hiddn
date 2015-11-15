@@ -23,6 +23,7 @@ var chalk = require('chalk');
 var connectToDb = require('./server/db');
 var User = Promise.promisifyAll(mongoose.model('User'));
 var Treasure = Promise.promisifyAll(mongoose.model('Treasure'));
+var Maps = Promise.promisifyAll(mongoose.model('Maps'));
 
 var seedUsers = function (treasure) {
 
@@ -58,8 +59,19 @@ var seedTreasure = function(user) {
     return Treasure.createAsync(treasure);
 }
 
+var seedMaps = function(treasure, user) {
+    var map = 
+        {
+            auther: user[0]._id,
+            treasure: treasure,
+            recipients: [user[1]._id]
+        }
+
+    return Maps.createAsync(map);
+}
+
 connectToDb.then(function (db) {
-    var users;
+    var users, treasure;
     db.db.dropDatabase()
     .then(function(){
         return seedTreasure();
@@ -69,6 +81,8 @@ connectToDb.then(function (db) {
         })
         return seedUsers(treasure);
     }).then(function(users){
+        return seedMaps(treasure, users)
+    }).then(function(){
         console.log("db seeded");
         process.exit(0);
     }).catch(function(err){

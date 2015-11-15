@@ -10,7 +10,7 @@ angular.module('hiddn.controllers', [])
 		})
 })
 
-.controller('MapCtrl', function($scope, $cordovaGeolocation, TreasureFactory, GeoFactory, $q, $rootScope, Session) {
+.controller('MapCtrl', function($scope, $cordovaGeolocation, TreasureFactory, GeoFactory, $q, $rootScope, Session, $ionicActionSheet, $timeout) {
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
   // To listen for when this page is active (for example, to refresh data),
@@ -139,6 +139,51 @@ angular.module('hiddn.controllers', [])
 				asyncTreasureMarkerPlacement(map, treasurePosition);
 		})
     }
+
+    // MapsFactory.getMaps() // returns an array of maps.
+
+    // add footer button to maps page
+    // with actionsheet
+    // action sheet should be able to switch between the two basic maps.
+
+	 $scope.showMaps = function() {
+
+	 	options = {
+		buttons: [
+   			{ text: 'Open Map' },
+   			{ text: 'Your Hidden Treasures' }
+	 		],
+ 			titleText: 'Choose A Map',
+			cancelText: 'Cancel',
+ 			cancel: function() {
+      			hideSheet();
+    		},
+ 			buttonClicked: function(index) {
+ 				console.log("showMaps button:", index)
+			    if (index===0) {
+   					renderMap(TreasureFactory.hiddenTreasure)
+    			} else if (index===1){
+   					renderMap(TreasureFactory.yourTreasure)
+   				} else {
+   					chooseMap(index)
+   				}
+ 			}
+	 	}
+
+	 	for (var map in MapFactory.userMaps) {
+	 		options.buttons.push({text: map})
+	 	}
+
+	 	// action sheet should be populated with the 
+	   var hideSheet = $ionicActionSheet.show(options);
+
+	   // For example's sake, hide the sheet after two seconds
+	   $timeout(function() {
+	     hideSheet();
+	   }, 2000);
+	}
+
+
 })
 
 

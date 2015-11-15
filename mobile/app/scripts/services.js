@@ -2,6 +2,8 @@ angular.module('hiddn.services', [])
 
   .factory('GeoFactory', function($cordovaGeolocation, $rootScope) {
 
+      console.log("GeoFactory Loaded");
+
       var GeoFactory = {};
 
       function setGeoFactory(position){
@@ -31,33 +33,19 @@ angular.module('hiddn.services', [])
 
       GeoFactory.watchCurrentPosition = function(){
 
-        // function succesFunc(position) {
-        //   setGeoFactory(position);
-        //   cb();
-        // }
-
-        // function errorFunc(error){
-        //   console.error(error);
-        // }
-
-        return $cordovaGeolocation.watchPosition({enableHighAccuray: true })
-      }
-
-
-      document.addEventListener('deviceready', function(){
          var watch = $cordovaGeolocation.watchPosition({enableHighAccuray: true });
-         watch.then(
-          null,
-          function(err) {
-            console.error(err);
-          },
-          function(position) {
-            setGeoFactory(position);
-            $rootScope.$emit('userLocationChanged');
-            // console.log("position inside GeoF:deviceready:watchPosition", position)
-        });
-      })
-
+           watch.then(
+            null,
+            function(err) {
+              console.error(err);
+            },
+            function(position) {
+              setGeoFactory(position);
+              $rootScope.$emit('userLocationChanged');
+              // console.log("position inside GeoF:deviceready:watchPosition", position)
+          });
+          return watch;
+      }
 
       return GeoFactory;
   })
@@ -67,11 +55,11 @@ angular.module('hiddn.services', [])
    
 })
 
-.factory('TreasureFactory', function($http, ENV){
+.factory('TreasureFactory', function($http, ENV, Session){
 
   var TreasureFactory = {}
-
-  TreasureFactory.found = []
+  TreasureFactory.hiddenTreasure = [];
+  TreasureFactory.yourTreasure = [];
 
   TreasureFactory.createTreasure = function(treasure){
     return $http.post(ENV.apiEndpoint + 'api/treasure/', treasure)
@@ -89,11 +77,16 @@ angular.module('hiddn.services', [])
 
   TreasureFactory.getAllTreasure = function(){
 
-    // return $http.get('http://blog.teamtreehouse.com/api/')
-
-    return $http.get(ENV.apiEndpoint + 'api/treasure/')
+    return $http.get(ENV.apiEndpoint + 'api/treasure')
       .then(function(response){
         console.log("TF:getAllTreasure:response", response);
+        var treasure = response.data
+        TreasureFactory.hiddenTreasure = treasure.filter(function(t){
+          return t.hider !== Session.user._id;
+        })
+        TreasureFactory.yourTreasure = treasure.filter(function(t){
+          return t.hider === Session.user._id;
+        })
         return response.data;
       }, function(error){
         console.error(error);
@@ -102,8 +95,16 @@ angular.module('hiddn.services', [])
   }
 
   //
-  TreasureFactory.loadFoundTreasure = function(){
-    // $http.get
+  TreasureFactory.loadFoundTreasure = function(userId){
+    return $http.get(ENV.apiEndpoint + 'api/users/' + userId + '/found')
+      .then(function(response){
+        console.log("TF:loadFoundTreasure:response", response);
+        TreasureFactory.found = response.data;
+        return response.data;
+      }, function(error){
+        console.error(error);
+        return error
+      })
   }
 
   return TreasureFactory;
@@ -164,6 +165,7 @@ angular.module('hiddn.services', [])
 .service('AuthService', function ($http, Session, $rootScope, AUTH_EVENTS, $q, ENV) {
 
         function onSuccessfulLogin(response) {
+            console.log("onSuccessfulLogin response", response);
             var data = response.data;
             Session.create(data.id, data.user);
             $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
@@ -187,13 +189,14 @@ angular.module('hiddn.services', [])
             // then this cached value will not be used.
 
             if (this.isAuthenticated() && fromServer !== true) {
+                console.log("inside getLoggedInUser conditional")
                 return $q.when(Session.user);
             }
 
             // Make request GET /session.
             // If it returns a user, call onSuccessfulLogin with the response.
             // If it returns a 401 response, we catch it and instead resolve to null.
-            return $http.get(ENV.apiEndpoint + '/session').then(onSuccessfulLogin).catch(function () {
+            return $http.get(ENV.apiEndpoint + 'session').then(onSuccessfulLogin).catch(function () {
                 return null;
             });
 
@@ -208,7 +211,7 @@ angular.module('hiddn.services', [])
         };
 
         this.logout = function () {
-            return $http.get('/logout').then(function () {
+            return $http.get(ENV.apiEndpoint + 'logout').then(function () {
                 Session.destroy();
                 $rootScope.$broadcast(AUTH_EVENTS.logoutSuccess);
             });

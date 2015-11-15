@@ -24,16 +24,18 @@ var connectToDb = require('./server/db');
 var User = Promise.promisifyAll(mongoose.model('User'));
 var Treasure = Promise.promisifyAll(mongoose.model('Treasure'));
 
-var seedUsers = function () {
+var seedUsers = function (treasure) {
 
     var users = [
         {
             email: 'testing@fsa.com',
-            password: 'password'
+            password: 'password',
+            found: treasure
         },
         {
             email: 'obama@gmail.com',
-            password: 'potus'
+            password: 'potus',
+            found: treasure
         }
     ];
 
@@ -41,11 +43,11 @@ var seedUsers = function () {
 
 };
 
-var seedTreasure = function() {
+var seedTreasure = function(user) {
     var treasure = [
         {
             coords: "40.7051951 -74.0090403",
-            value: "GOLD"
+            value: "GOLD",
         },
         {
             coords: "41.7051951 -74.0090403",
@@ -57,13 +59,16 @@ var seedTreasure = function() {
 }
 
 connectToDb.then(function (db) {
+    var users;
     db.db.dropDatabase()
     .then(function(){
-        return seedUsers();
-    }).then(function(){
         return seedTreasure();
     }).then(function(treasure){
-        // this.reviews = _indexBy(reviews, '')
+        treasure = treasure.map(function(t){
+            return t._id;
+        })
+        return seedUsers(treasure);
+    }).then(function(users){
         console.log("db seeded");
         process.exit(0);
     }).catch(function(err){

@@ -9,9 +9,7 @@ var schema = new mongoose.Schema({
     password: {
         type: String
     },
-    found: {
-        type: {type: mongoose.Schema.Types.ObjectId, ref: 'User'}
-    },
+    found: [{type: mongoose.Schema.Types.ObjectId, ref: 'Treasure'}],
     salt: {
         type: String
     },

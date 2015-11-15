@@ -6,5 +6,10 @@
 -->
 <ion-view view-title="Treasure">
   <ion-content class="padding">
+  	<ion-list>
+  		<ion-item ng-repeat="treasure in treasures">
+    		Hello, {{treasure.value}}!
+ 	 </ion-item>
+</ion-list>
   </ion-content>
 </ion-view>

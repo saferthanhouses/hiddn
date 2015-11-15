@@ -1,7 +1,7 @@
 'use strict';
 var router = require('express').Router();
 
-router.use('/members', require('./members'));
+router.use('/users', require('./users'));
 router.use('/treasure', require('./treasure'));
 // Make sure this is after all of
 // the registered routes!

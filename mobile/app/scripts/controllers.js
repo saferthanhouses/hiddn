@@ -1,6 +1,8 @@
 angular.module('hiddn.controllers', [])
 
 .controller('TreasureCtrl', function($scope, TreasureFactory, Session) {
+
+	console.log("session inside treasure");
 	TreasureFactory.loadFoundTreasure(Session.user._id)
 		.then(function(treasures){
 			console.log("successful load")
@@ -113,6 +115,8 @@ angular.module('hiddn.controllers', [])
 
     // organise by map on the found list...
 
+    $scope.mapMarkers = []
+
     function updateUserPosition(map, circle){
     	console.log("updating user position ...", GeoFactory.position, GeoFactory.accuracy);
     	var newCenter = new plugin.google.maps.LatLng(GeoFactory.lat, GeoFactory.long)
@@ -134,13 +138,21 @@ angular.module('hiddn.controllers', [])
 	    			console.error(error);
 	    		})
     	} else {
+    		TreasureFactory.loadMapTreasure(treasureMap._id).then(function(treasure){
+	    		placeTreasures(map, treasure);
+    		}, function(error){
+    			console.error(error);
+    		})
     		// other maps
-
     	}
     }
 
-
     function placeTreasures(map, treasures){
+    	if ($scope.mapMarkers) {
+    		$scope.mapMarkers.forEach(function(marker){
+    			marker.remove();
+    		})
+    	}
     	console.log("treasures", treasures)
 		treasures.forEach(function(treasure){
 				console.log("treasure in placeTreasures", treasure)
@@ -150,14 +162,12 @@ angular.module('hiddn.controllers', [])
 		})
     }
 
-    // MapsFactory.getMaps() // returns an array of maps.
-
-    // add footer button to maps page
-    // with actionsheet
-    // action sheet should be able to switch between the two basic maps.
-
 	 $scope.showMaps = function() {
 
+	 	function chooseMap(index){
+	 		var map = MapFactory.allMaps[options.buttons[index]]
+	 		getTreasure(map);
+	 	}
 
 	 	options = {
 		buttons: [
@@ -267,13 +277,24 @@ angular.module('hiddn.controllers', [])
 		}
 })
 
-.controller('SignupCtrl', function($scope, AuthService){
-		console.log("inside signup");
+.controller('SignupCtrl', function($scope, AuthService, $state){
+		$scope.buttonText = {text: "Signup"};
 		$scope.user = {};
-		$scope.login = function(){
-			var creds = {email: $scope.user.email, password: $scope.user.password};
-			AuthService.login(creds).then(function(){
-				$state.go('map');
-			})
+		$scope.signup = function (signupInfo){
+			if ($scope.user.password !== $scope.user.password2){
+				// flash here
+				console.log("passwords do not match")
+				return;
+			} else {
+				console.log("user", $scope.user);
+				$scope.buttonText.text = "Signing you up ..." 
+				$scope.signUpDisabled=true;
+				AuthService.signup($scope.user)
+					.then(function () {
+			            $state.go('tab.map');
+			        }).catch(function () {
+			            $scope.error = 'Signup error';
+			        });
+		    }
 		}
 })

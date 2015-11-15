@@ -121,12 +121,24 @@ angular.module('hiddn.services', [])
       })
   }
 
-  //
+
   TreasureFactory.loadFoundTreasure = function(userId){
     return $http.get(ENV.apiEndpoint + 'api/users/' + userId + '/found')
       .then(function(response){
         console.log("TF:loadFoundTreasure:response", response);
         TreasureFactory.found = response.data;
+        return response.data;
+      }, function(error){
+        console.error(error);
+        return error
+      })
+  }
+
+  TreasureFactory.loadMapTreasure = function(mapId){
+    return $http.get(ENV.apiEndpoint + 'api/maps/' + mapId + '/treasures')
+      .then(function(response){
+        console.log("TF:loadMapTreasure:response", response);
+        // TreasureFactory.found = response.data;
         return response.data;
       }, function(error){
         console.error(error);
@@ -234,6 +246,20 @@ angular.module('hiddn.services', [])
                 .then(onSuccessfulLogin)
                 .catch(function () {
                     return $q.reject({ message: 'Invalid login credentials.' });
+                });
+        };
+
+        this.signup = function (credentials) {
+            //sends a post request containing the user's credentials to 
+            return $http.post(ENV.apiEndpoint + 'api/users/signup', credentials)
+                //once the user has been created on the backend...
+                .then(function(response) {
+                    //a second post request is created to log the user in
+                    return $http.post(ENV.apiEndpoint + 'login', credentials);
+                })
+                .then(onSuccessfulLogin)
+                .catch(function () {
+                    return $q.reject({ message: 'Invalid signup credentials.' });
                 });
         };
 

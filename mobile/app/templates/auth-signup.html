@@ -1,14 +1,18 @@
-<ion-view view-title="Singup">
+<ion-view view-title="Signup">
  <ion-content class="padding">
     <label class="item item-input item-floating-label">
       <span class="input-label">Email Address</span>
       <input ng-model="user.email" type="text" placeholder="Email Address">
     </label>
     <label class="item item-input item-floating-label">
-      <span class="input-label">Email Address</span>
+      <span class="input-label">Password</span>
       <input ng-model="user.password" type="password" placeholder="password">
     </label>
+    <label class="item item-input item-floating-label">
+      <span class="input-label">Confirm Password</span>
+      <input ng-model="user.password2" type="password" placeholder="password">
+    </label>
     <!-- why is ng-model not working? -->
-     <button ng-click="signup()" class="button button-assertive">Signup</button>
+     <button ng-click="signup()" class="button button-assertive" ng-disabled="signUpDisabled">{{buttonText.text}}</button>
   </ion-content>
 </ion-view>

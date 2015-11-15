@@ -191,13 +191,12 @@ angular.module('hiddn.controllers', [])
 	 			console.log("allMaps", MapFactory.allMaps)
 
 	 			for (var map in MapFactory.publishedMaps){
-	 				options.buttons.push({text: "<i>Your Map</i>" + map})
+	 				options.buttons.push({text: "<i>Your Map</i> " + map})
 	 			}
 
 			 	for (var map in MapFactory.donatedMaps) {
 			 		options.buttons.push({text: map})
 			 	}
-
 			 	// action sheet should be populated with the 
 			   var hideSheet = $ionicActionSheet.show(options);
 

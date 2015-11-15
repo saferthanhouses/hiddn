@@ -10,7 +10,7 @@ angular.module('hiddn.controllers', [])
 		})
 })
 
-.controller('MapCtrl', function($scope, $cordovaGeolocation, TreasureFactory, GeoFactory, $q, $rootScope) {
+.controller('MapCtrl', function($scope, $cordovaGeolocation, TreasureFactory, GeoFactory, $q, $rootScope, Session) {
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
   // To listen for when this page is active (for example, to refresh data),
@@ -21,6 +21,20 @@ angular.module('hiddn.controllers', [])
 
     var div = document.getElementById("map_canvas");
     var map;
+
+	$rootScope.$on('auth-login-success', runMap)
+
+    function runMap() {
+			console.log("auth-login-success heard");
+			// GeoFactory.getCurrentPosition().then(function(result){
+				//console.log("result (posObj) inside MapCtrl deviceready",result);
+			map = initializeMap();
+	  		map.addEventListener(plugin.google.maps.event.MAP_READY, function(map){
+	  			startUserPosition(map)
+	  			getTreasure(map); 
+	 		});
+	 }
+
 
 	function asyncMarkerPlacement (map, userPosition){
 		var d = $q.defer();
@@ -52,9 +66,9 @@ angular.module('hiddn.controllers', [])
 	}
 
 
-    function initializeMap(positionObj){
+    function initializeMap(){
 		// // if we have the position - run the map update
-			var startPos = new plugin.google.maps.LatLng(positionObj.lat, positionObj.long);
+			var startPos = new plugin.google.maps.LatLng(GeoFactory.lat, GeoFactory.long);
 	    	var map = plugin.google.maps.Map.getMap(div, {
 	    		'camera': {
 	    			'latLng': startPos,
@@ -62,27 +76,29 @@ angular.module('hiddn.controllers', [])
 	    		}
 	    	});
 	    	return map;
-	    }
+	}
 
 
-    function startUserPosition(map, userPosition){
+    function startUserPosition(map){
 
     	console.log("inside startUserPosition", map);
     	console.log("inside startUserPosition GF.position", GeoFactory.position, GeoFactory.accuracy)
     	
-    	var userPos = new plugin.google.maps.LatLng(userPosition.lat, userPosition.long);
+    	var userPos = new plugin.google.maps.LatLng(GeoFactory.lat, GeoFactory.long);
 
-    	asyncMarkerPlacement(map, userPosition).then(function(circle){
+    	asyncMarkerPlacement(map, {lat:GeoFactory.lat, long:GeoFactory.long}).then(function(circle){
     		$rootScope.$on('userLocationChanged', function(){
     			console.log("inside user location change - circle", circle);
 	    		updateUserPosition(map, circle);
-				    			
+	    		// check the user hasn't passed over any treasures.
+	    		// checkTreasures();
 		    })
     	})
     }
 
     function getRadius(acc){
     	// get an actual rep here ...
+    	// accuracy is in meters ...
     	return acc;
     }
 
@@ -104,36 +120,24 @@ angular.module('hiddn.controllers', [])
     	TreasureFactory.getAllTreasure()
     		.then(function(treasures){
     			console.log("MapCtrl:addTreasure:treasures:", treasures);
-    			treasures.forEach(function(treasure){
-    				t_coords = treasure.coords.split(' ');
-    				treasurePosition = {lat: t_coords[0], long: t_coords[1]};
-    				asyncTreasureMarkerPlacement(map, treasurePosition);
-    			})
+    			console.log("MapCtrl:TreasureFactory.hiddenTreasure", TreasureFactory.hiddenTreasure);
+    			$scope.hiddenTreasure = TreasureFactory.hiddenTreasure;
+    			$scope.yourTreasure = TreasureFactory.yourTreasure;
+    			placeTreasures(map, TreasureFactory.hiddenTreasure);
     		}, function(error){
     			console.error(error);
     		})
     }
 
-    // 	############  START START START ############################################
-    // ######### when the device is ready load the position & the map. ###########
-	document.addEventListener("deviceready", function() {
-		// $rootScope.$on('auth-login-success', function() {
-			GeoFactory.getCurrentPosition().then(function(result){
-				//console.log("result (posObj) inside MapCtrl deviceready",result);
-				map = initializeMap(result);
-		  		map.addEventListener(plugin.google.maps.event.MAP_READY, function(map){
-		  			getTreasure(map); 
-		  			startUserPosition(map, result)
-		  		});
-
-				}, function(error){
-					console.error("inside MapCtrl", error);
-				}
-			)		
-		// })
-	})
-
-
+    function placeTreasures(map, treasures){
+    	console.log("treasures", treasures)
+		treasures.forEach(function(treasure){
+				console.log("treasure in placeTreasures", treasure)
+				t_coords = treasure.coords.split(' ');
+				treasurePosition = {lat: t_coords[0], long: t_coords[1]};
+				asyncTreasureMarkerPlacement(map, treasurePosition);
+		})
+    }
 })
 
 

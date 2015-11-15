@@ -7,10 +7,11 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config', 'ngCordova'])
 
-.run(function($ionicPlatform, $cordovaGeolocation, AuthService, $rootScope, $state) {
+.run(function($ionicPlatform, AuthService, $rootScope, $state, GeoFactory) {
 
     console.log("inside run");
 
+    // as the app boots - declare stateChange listener tha checks for a auth on stateChange
     $rootScope.$on('$stateChangeStart', function (event, toState, toParams) {
         console.log("toState", toState);
 
@@ -21,41 +22,37 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
           return;
         }
 
-        // // Cancel navigating to new state.
-        // event.preventDefault();
+        AuthService.getLoggedInUser().then(function (user) {
+            console.log("AuthService:getLoggedInUser:user", user);
 
-
-      AuthService.getLoggedInUser().then(function (user) {
-          console.log("AuthService:getLoggedInUser:user", user);
-          // If a user is retrieved, then renavigate to the destination
-            // or redirect to signup - this is not the most modular / elegant solution
-          // (the second time, AuthService.isAuthenticated() will work)
-          // otherwise, if no user is logged in, go to "login" state.
-          if (user || toState.name=="auth.signup") {
-            console.log("there is a user...");
-              $state.go(toState.name, toParams);
-          } else {
-              $state.go('auth.login');
-          }
-      });
+            if (user || toState.name=="auth.signup") {
+              console.log("there is a user...");
+                $state.go(toState.name, toParams);
+            } else {
+                $state.go('auth.login');
+            }
+        });
     })
 
-  $ionicPlatform.ready(function() {
-    // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
-    // for form inputs)
-    console.log("inside ready");
+    $ionicPlatform.ready(function() {
+        // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
+        // for form inputs)
+        console.log("inside ready");
 
-    if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
-      cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
-      cordova.plugins.Keyboard.disableScroll(true);
+        if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
+          cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
+          cordova.plugins.Keyboard.disableScroll(true);
 
-    }
-    if (window.StatusBar) {
-      // org.apache.cordova.statusbar required
-      StatusBar.styleDefault();
-    }
+        }
+        if (window.StatusBar) {
+          // org.apache.cordova.statusbar required
+          StatusBar.styleDefault();
+        }
+        
+        // when system plugins have loaded start watching the current position.
+        GeoFactory.watchCurrentPosition();
 
-  });
+    });
 })
 
 .config(function($stateProvider, $urlRouterProvider) {
@@ -67,7 +64,6 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
   $stateProvider
 
   // setup an abstract state for the tabs directive
-
    .state('auth', {
     url: '/auth',
     templateUrl: 'templates/auth.html',

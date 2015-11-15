@@ -53,10 +53,25 @@ angular.module('hiddn.services', [])
         console.log("HiddenTreasure we've got", TreasureFactory.hiddenTreasure);
         for (var i = 0; i < TreasureFactory.hiddenTreasure.length; i++){
             // log the user's distance from treasure:
-            var t_coords = TreasureFactory.hiddenTreasure[i].coords.split(' ');
+            var treasure = TreasureFactory.hiddenTreasure[i]
+            var t_coords = treasure.coords.split(' ');
             var t_lat = t_coords[0], t_long = t_coords[1];
             var d = getDistanceFromLatLonInKm(GeoFactory.lat, GeoFactory.long, t_lat, t_long);   
-            console.log("distance from user to", TreasureFactory.hiddenTreasure[i].value + ":", d + "km");
+            console.log("distance from user to", treasure.value + ":", d + "km");
+            // if the user is close enough;
+            if (d<TreasureFactory.findDistance){
+                // add to frontend data.
+                TreasureFactory.hiddenTreasure.splice(i, 1);
+                TreasureFactory.yourTreasure.push(treasure);
+                // will this show?
+
+                // update on backend...
+                    // add to treasure instance
+                TreasureFactory.updateTreasureStatus(treasure._id, {finder: Session.user._id})
+                    // add to user's found property
+                UserFactory.updateUserFound(Session.user._id, {found: treasure._id})
+                // remove from map?
+            }
         }
       }
 
@@ -81,6 +96,19 @@ angular.module('hiddn.services', [])
       return GeoFactory;
   })
 
+
+.factory('UserFactory', function(Session, $http, ENV){
+    var UserFactory = {};
+    UserFactory.updateUserFound = function(userId, update) {
+        return $http.put(ENV + 'api/users/' + userId + '/found', update)
+            .then(function(response){
+                console.log("User update successful", response.data)
+                return response.data;
+            }, function(error){
+                return error
+            })
+    }
+})
 
 .factory('MapFactory', function($cordovaGeolocation, $http, ENV, Session) {
     var MapFactory = {};
@@ -126,6 +154,7 @@ angular.module('hiddn.services', [])
     // need an array of all the nearby hidden treasure.
 
   var TreasureFactory = {}
+  TreasureFactory.findDistance = 0.1;
   TreasureFactory.hiddenTreasure = [];
   TreasureFactory.yourTreasure = [];
 
@@ -150,7 +179,9 @@ angular.module('hiddn.services', [])
         var treasure = response.data
         // all treasure hidden from the user. Not taking maps into account...
         TreasureFactory.hiddenTreasure = treasure.filter(function(t){
-          return t.hider !== Session.user._id;
+            // if the treasure was not hidden by the user and the treasure is 
+            // not yet found.
+          return ((t.hider !== Session.user._id) && (!t.finder));
         })
         // all treasure placed by the user. This does not take maps into account.
         TreasureFactory.yourTreasure = treasure.filter(function(t){
@@ -185,6 +216,16 @@ angular.module('hiddn.services', [])
         console.error(error);
         return error
       })
+  }
+
+  TreasureFactory.updateTreasureStatus = function(treasureId){
+    // PUT/api/treasure/:id
+    return $http.put(ENV.apiEndpoint + 'api/treasure/' + treasureId)
+        .then(function(response){ 
+            return response.data;
+        }, function(error){
+            console.error(error);
+        })
   }
 
   return TreasureFactory;

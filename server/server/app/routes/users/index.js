@@ -40,6 +40,17 @@ router.get('/:id/found', function(req, res, next){
 	res.json(req.user.found);
 })
 
+router.put('/:id/found', function(req, res, next){
+	// THIS WILL ONLY UPDATE THE FOUND CATEGORY!
+	req.user.found.push(req.body.found);
+	req.user.save()
+		.then(function(data){
+			res.json(data);
+		})
+		// .catch(next(error));
+	.then(null, next);
+})
+
 router.get('/:id/publishedMaps', function(req, res, next){
 	Maps.find({'auther': req.user._id}).populate('treasure').exec(function(err, maps){
 		if (err){

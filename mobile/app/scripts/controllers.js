@@ -244,7 +244,7 @@ angular.module('hiddn.controllers', [])
 	};
 })
 
-.controller('UserCtrl', function($scope, $state) {
+.controller('UserCtrl', function(AuthService, $scope, $state) {
 
 	$scope.logout = function(){
 		AuthService.logout();

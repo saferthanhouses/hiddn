@@ -13,6 +13,15 @@ var ensureAuthenticated = function (req, res, next) {
 };
 
 
+//signup a new user - directed here from signupController
+router.post('/signup', function(req, res, next){
+	User.create(req.body)
+	.then(function(user){
+		res.status(201).json(user);
+	})
+	.then(null, next);
+})
+
 router.param('id', function(req, res, next, id){
 	User.findById(id).populate('found').exec(function(err, user){
 			 if (err){
@@ -50,5 +59,7 @@ router.get('/:id/donatedMaps', function(req, res, next){
 		}
 	})
 })
+
+
 
 module.exports = router;

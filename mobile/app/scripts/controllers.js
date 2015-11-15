@@ -277,15 +277,24 @@ angular.module('hiddn.controllers', [])
 		}
 })
 
-.controller('SignupCtrl', function($scope, AuthService){
-		console.log("inside signup");
+.controller('SignupCtrl', function($scope, AuthService, $state){
+		$scope.buttonText = {text: "Signup"};
 		$scope.user = {};
-		$scope.sendSignup = function (signupInfo){
-			AuthService.signup(signupInfo)
-				.then(function () {
-		            $state.go('home');
-		        }).catch(function () {
-		            $scope.error = 'Signup error';
-		        });
+		$scope.signup = function (signupInfo){
+			if ($scope.user.password !== $scope.user.password2){
+				// flash here
+				console.log("passwords do not match")
+				return;
+			} else {
+				console.log("user", $scope.user);
+				$scope.buttonText.text = "Signing you up ..." 
+				$scope.signUpDisabled=true;
+				AuthService.signup($scope.user)
+					.then(function () {
+			            $state.go('tab.map');
+			        }).catch(function () {
+			            $scope.error = 'Signup error';
+			        });
+		    }
 		}
 })

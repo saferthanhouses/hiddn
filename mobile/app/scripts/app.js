@@ -22,6 +22,9 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
           return;
         }
 
+        // event.preventDefault();
+
+
         AuthService.getLoggedInUser().then(function (user) {
             console.log("AuthService:getLoggedInUser:user", user);
 

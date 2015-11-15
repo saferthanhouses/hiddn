@@ -121,12 +121,24 @@ angular.module('hiddn.services', [])
       })
   }
 
-  //
+
   TreasureFactory.loadFoundTreasure = function(userId){
     return $http.get(ENV.apiEndpoint + 'api/users/' + userId + '/found')
       .then(function(response){
         console.log("TF:loadFoundTreasure:response", response);
         TreasureFactory.found = response.data;
+        return response.data;
+      }, function(error){
+        console.error(error);
+        return error
+      })
+  }
+
+  TreasureFactory.loadMapTreasure = function(mapId){
+    return $http.get(ENV.apiEndpoint + 'api/maps/' + mapId + '/treasures')
+      .then(function(response){
+        console.log("TF:loadMapTreasure:response", response);
+        // TreasureFactory.found = response.data;
         return response.data;
       }, function(error){
         console.error(error);

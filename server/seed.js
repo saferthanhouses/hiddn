@@ -60,13 +60,14 @@ var seedTreasure = function(user) {
 }
 
 var seedMaps = function(treasure, user) {
+    console.log("treasure", treasure)
     var map = 
-        {
+        [{
             title: "testMap",
             auther: user[0]._id,
-            treasure: treasure,
+            treasure: treasure.treasure,
             recipients: [user[1]._id]
-        }
+        }]
 
     return Maps.createAsync(map);
 }
@@ -80,7 +81,8 @@ connectToDb.then(function (db) {
         treasure = treasure.map(function(t){
             return t._id;
         })
-        return seedUsers(treasure);
+        console.log("treasure", treasure);
+        return seedUsers(users);
     }).then(function(users){
         return seedMaps(treasure, users)
     }).then(function(){

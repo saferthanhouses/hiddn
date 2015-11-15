@@ -2,8 +2,6 @@ angular.module('hiddn.services', [])
 
   .factory('GeoFactory', function($cordovaGeolocation, $rootScope) {
 
-      console.log("GeoFactory Loaded");
-
       var GeoFactory = {};
 
       function setGeoFactory(position){
@@ -16,13 +14,11 @@ angular.module('hiddn.services', [])
       GeoFactory.getCurrentPosition = function(){
         return $cordovaGeolocation.getCurrentPosition({timeout:10000, enableHighAccuray:true})
           .then(function(position){
-            console.log("position in GeoFactory.getCurrentPosition", position);
             var result = {};
             result.lat = position.coords.latitude;
             result.long = position.coords.longitude; 
             result.accuracy = position.coords.accuracy;
             setGeoFactory(position);
-            console.log("result in GeoFactory.getCurrentPosition", result);            
             return result;
           }, function(error){
             // flash! Could not get position, trying to reconnect ..
@@ -42,7 +38,6 @@ angular.module('hiddn.services', [])
             function(position) {
               setGeoFactory(position);
               $rootScope.$emit('userLocationChanged');
-              // console.log("position inside GeoF:deviceready:watchPosition", position)
           });
           return watch;
       }
@@ -56,6 +51,7 @@ angular.module('hiddn.services', [])
     MapFactory.publishedMaps = {}
     MapFactory.donatedMaps = {}
     MapFactory.allMaps = {}
+    MapFactory.mapMarkers = [];
 
     MapFactory.getDonatedMaps = function(userId) {
         return $http.get(ENV.apiEndpoint + 'api/users/' + userId + '/donatedMaps')
@@ -84,6 +80,15 @@ angular.module('hiddn.services', [])
 
 .factory('TreasureFactory', function($http, ENV, Session){
 
+    // need to get:
+    // treasure on the open map that the user has not placed.
+    // user's placed treasures
+    // maps user is tagged in.
+    // maps user has made
+
+    // 1. !!!
+    // need an array of all the nearby hidden treasure.
+
   var TreasureFactory = {}
   TreasureFactory.hiddenTreasure = [];
   TreasureFactory.yourTreasure = [];
@@ -103,14 +108,15 @@ angular.module('hiddn.services', [])
   }
 
   TreasureFactory.getOpenTreasure = function(){
-
+    // change factory so it gets all treasure then filters?
     return $http.get(ENV.apiEndpoint + 'api/treasure')
       .then(function(response){
-        console.log("TF:getAllTreasure:response", response);
         var treasure = response.data
+        // all treasure hidden from the user. Not taking maps into account...
         TreasureFactory.hiddenTreasure = treasure.filter(function(t){
           return t.hider !== Session.user._id;
         })
+        // all treasure placed by the user. This does not take maps into account.
         TreasureFactory.yourTreasure = treasure.filter(function(t){
           return t.hider === Session.user._id;
         })
@@ -125,7 +131,6 @@ angular.module('hiddn.services', [])
   TreasureFactory.loadFoundTreasure = function(userId){
     return $http.get(ENV.apiEndpoint + 'api/users/' + userId + '/found')
       .then(function(response){
-        console.log("TF:loadFoundTreasure:response", response);
         TreasureFactory.found = response.data;
         return response.data;
       }, function(error){
@@ -135,11 +140,10 @@ angular.module('hiddn.services', [])
   }
 
   TreasureFactory.loadMapTreasure = function(mapId){
-    return $http.get(ENV.apiEndpoint + 'api/maps/' + mapId + '/treasures')
+    return $http.get(ENV.apiEndpoint + 'api/maps/' + mapId + '/treasure')
       .then(function(response){
-        console.log("TF:loadMapTreasure:response", response);
         // TreasureFactory.found = response.data;
-        return response.data;
+        return response.data.treasure;
       }, function(error){
         console.error(error);
         return error
@@ -228,7 +232,6 @@ angular.module('hiddn.services', [])
             // then this cached value will not be used.
 
             if (this.isAuthenticated() && fromServer !== true) {
-                console.log("inside getLoggedInUser conditional")
                 return $q.when(Session.user);
             }
 

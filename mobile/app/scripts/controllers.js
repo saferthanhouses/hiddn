@@ -2,10 +2,8 @@ angular.module('hiddn.controllers', [])
 
 .controller('TreasureCtrl', function($scope, TreasureFactory, Session) {
 
-	console.log("session inside treasure");
 	TreasureFactory.loadFoundTreasure(Session.user._id)
 		.then(function(treasures){
-			console.log("successful load")
 			$scope.treasures = treasures;
 		}, function(error){
 			console.error(error);
@@ -79,6 +77,7 @@ angular.module('hiddn.controllers', [])
 		    			'zoom': 14
 		    		}
 		    	});
+		    	MapFactory.googleMap = map;
 		    	return map;
 			}, function(error){
 				console.error(error);
@@ -91,7 +90,6 @@ angular.module('hiddn.controllers', [])
 
     	asyncMarkerPlacement(map, {lat:GeoFactory.lat, long:GeoFactory.long}).then(function(circle){
     		$rootScope.$on('userLocationChanged', function(){
-    			console.log("inside user location change - circle", circle);
 	    		updateUserPosition(map, circle);
 	    		// check the user hasn't passed over any treasures.
 	    		// checkTreasures();
@@ -115,22 +113,20 @@ angular.module('hiddn.controllers', [])
 
     // organise by map on the found list...
 
-    $scope.mapMarkers = []
+    // $scope.mapMarkers = []
 
     function updateUserPosition(map, circle){
-    	console.log("updating user position ...", GeoFactory.position, GeoFactory.accuracy);
     	var newCenter = new plugin.google.maps.LatLng(GeoFactory.lat, GeoFactory.long)
     	circle.setCenter(newCenter);
     	circle.setRadius(getRadius(GeoFactory.accuracy));
-    	console.log("MapCtrl:updateUserPosition:circle.radius", circle.radius);
     }
 
     function getTreasure(map, treasureMap){
+    	// will this be a map or an array of treasure?
     	if (!treasureMap){
+    		// this is being called because ... treasure map is undefined .. because?
 	    	TreasureFactory.getOpenTreasure()
 	    		.then(function(treasures){
-	    			console.log("MapCtrl:addTreasure:treasures:", treasures);
-	    			console.log("MapCtrl:TreasureFactory.hiddenTreasure", TreasureFactory.hiddenTreasure);
 	    			$scope.hiddenTreasure = TreasureFactory.hiddenTreasure;
 	    			$scope.yourTreasure = TreasureFactory.yourTreasure;
 	    			placeTreasures(map, TreasureFactory.hiddenTreasure);
@@ -139,7 +135,7 @@ angular.module('hiddn.controllers', [])
 	    		})
     	} else {
     		TreasureFactory.loadMapTreasure(treasureMap._id).then(function(treasure){
-	    		placeTreasures(map, treasure);
+	    		placeTreasures(null, treasure);
     		}, function(error){
     			console.error(error);
     		})
@@ -148,25 +144,27 @@ angular.module('hiddn.controllers', [])
     }
 
     function placeTreasures(map, treasures){
-    	if ($scope.mapMarkers) {
-    		$scope.mapMarkers.forEach(function(marker){
-    			marker.remove();
-    		})
+    	if (!map) {
+    		map = MapFactory.googleMap;
     	}
-    	console.log("treasures", treasures)
+		MapFactory.mapMarkers.forEach(function(marker){
+			marker.remove();
+		})
 		treasures.forEach(function(treasure){
-				console.log("treasure in placeTreasures", treasure)
 				t_coords = treasure.coords.split(' ');
 				treasurePosition = {lat: t_coords[0], long: t_coords[1]};
-				asyncTreasureMarkerPlacement(map, treasurePosition);
+				asyncTreasureMarkerPlacement(map, treasurePosition).then(function(marker){
+					MapFactory.mapMarkers.push(marker);
+				});
 		})
     }
 
 	 $scope.showMaps = function() {
 
 	 	function chooseMap(index){
-	 		var map = MapFactory.allMaps[options.buttons[index]]
-	 		getTreasure(map);
+
+	 		var map = MapFactory.allMaps[options.buttons[index].text]
+	 		getTreasure(null, map);
 	 	}
 
 	 	options = {
@@ -181,11 +179,10 @@ angular.module('hiddn.controllers', [])
       			console.log("cancel pressed");
     		},
  			buttonClicked: function(index) {
- 				console.log("showMaps button:", index)
 			    if (index===0) {
-   					renderMap(TreasureFactory.hiddenTreasure)
+   					placeTreasures(null, TreasureFactory.hiddenTreasure)
     			} else if (index===1){
-   					renderMap(TreasureFactory.yourTreasure)
+   					placeTreasures(null, TreasureFactory.yourTreasure)
    				} else {
    					chooseMap(index)
    				}
@@ -197,9 +194,6 @@ angular.module('hiddn.controllers', [])
 	 			MapFactory.getPublishedMaps(Session.user._id)
 	 		})
 	 		.then(function(){
-
-	 			console.log("allMaps", MapFactory.allMaps)
-
 	 			for (var map in MapFactory.publishedMaps){
 	 				options.buttons.push({text: "<i>Your Map</i> " + map})
 	 			}
@@ -225,11 +219,16 @@ angular.module('hiddn.controllers', [])
 .controller('HideCtrl', function($scope, $stateParams, TreasureFactory, $cordovaGeolocation, GeoFactory, Session) {
 
 	$scope.treasure = {value: ''}
+	$scope.button = {message: "Hide Treasure!"};
+	$scope.loadingTreasure = false;
 
 	$scope.hideTreasure = function(treasure) {
-		console.log("$scope.treasure?", $scope.treasure)
+		$scope.loadingTreasure = true;
+		$scope.button.message = "Hiding Your Treasure ..."
 		GeoFactory.getCurrentPosition().then(function(result){
 				
+				// check position accuracy ...
+
 				treasure = {
 					coords: result.lat +' ' + result.long, 
 					value: $scope.treasure.value,
@@ -239,7 +238,6 @@ angular.module('hiddn.controllers', [])
 				TreasureFactory.createTreasure(treasure)
 					.then(function(treasure){
 						$scope.treasure.value = "";
-						console.log("HideCtrl:hideTreasure:TF.cT:returned treasure", treasure)
 						TreasureFactory.hiddenTreasure.push(treasure);
 					}, function(){
 						// flash?
@@ -253,8 +251,9 @@ angular.module('hiddn.controllers', [])
 	};
 })
 
-.controller('UserCtrl', function(AuthService, $scope, $state) {
-
+.controller('UserCtrl', function(AuthService, $scope, $state, Session) {
+	$scope.user = {};
+	$scope.user.email = Session.user.email;
 	$scope.logout = function(){
 		AuthService.logout();
 		$state.go('auth.login');
@@ -286,7 +285,6 @@ angular.module('hiddn.controllers', [])
 				console.log("passwords do not match")
 				return;
 			} else {
-				console.log("user", $scope.user);
 				$scope.buttonText.text = "Signing you up ..." 
 				$scope.signUpDisabled=true;
 				AuthService.signup($scope.user)

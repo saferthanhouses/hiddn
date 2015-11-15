@@ -9,7 +9,7 @@
       <input ng-model="treasure.value" type="text" placeholder="First Name">
     </label>
     <!-- why is ng-model not working? -->
-    <button ng-click="hideTreasure();" class="button button-assertive">HIDE</button>
+    <button ng-click="hideTreasure()" ng-disabled="loadingTreasure" class="button button-assertive">{{ button.message }}</button>
   </ion-content>
 </ion-view>
 

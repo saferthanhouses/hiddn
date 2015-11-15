@@ -65,26 +65,28 @@ var seedMaps = function(treasure, user) {
         [{
             title: "testMap",
             auther: user[0]._id,
-            treasure: treasure.treasure,
+            treasure: treasure,
             recipients: [user[1]._id]
         }]
 
     return Maps.createAsync(map);
 }
 
+var treasures = {};
+
 connectToDb.then(function (db) {
-    var users, treasure;
+    var users;
     db.db.dropDatabase()
     .then(function(){
         return seedTreasure();
     }).then(function(treasure){
-        treasure = treasure.map(function(t){
+        treasures.treasure = treasure.map(function(t){
             return t._id;
         })
-        console.log("treasure", treasure);
+        console.log("treasure", treasures.treasure);
         return seedUsers(users);
     }).then(function(users){
-        return seedMaps(treasure, users)
+        return seedMaps(treasures.treasure, users)
     }).then(function(){
         console.log("db seeded");
         process.exit(0);

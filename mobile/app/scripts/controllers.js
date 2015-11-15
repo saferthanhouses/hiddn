@@ -191,13 +191,12 @@ angular.module('hiddn.controllers', [])
 	 			console.log("allMaps", MapFactory.allMaps)
 
 	 			for (var map in MapFactory.publishedMaps){
-	 				options.buttons.push({text: "<i>Your Map</i>" + map})
+	 				options.buttons.push({text: "<i>Your Map</i> " + map})
 	 			}
 
 			 	for (var map in MapFactory.donatedMaps) {
 			 		options.buttons.push({text: map})
 			 	}
-
 			 	// action sheet should be populated with the 
 			   var hideSheet = $ionicActionSheet.show(options);
 
@@ -244,10 +243,11 @@ angular.module('hiddn.controllers', [])
 	};
 })
 
-.controller('UserCtrl', function($scope) {
+.controller('UserCtrl', function(AuthService, $scope, $state) {
 
 	$scope.logout = function(){
 		AuthService.logout();
+		$state.go('auth.login');
 	}
 
 })

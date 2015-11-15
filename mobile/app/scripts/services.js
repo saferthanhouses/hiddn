@@ -51,8 +51,35 @@ angular.module('hiddn.services', [])
   })
 
 
-.factory('Map', function($cordovaGeolocation) {
-   
+.factory('MapFactory', function($cordovaGeolocation, $http, ENV, Session) {
+    var MapFactory = {};
+    MapFactory.publishedMaps = {}
+    MapFactory.donatedMaps = {}
+    MapFactory.allMaps = {}
+
+    MapFactory.getDonatedMaps = function(userId) {
+        return $http.get(ENV.apiEndpoint + 'api/users/' + userId + '/donatedMaps')
+            .then(function(response){
+                response.data.forEach(function(m){
+                    MapFactory.donatedMaps[m.title] = m; // conflicting map names?
+                    MapFactory.allMaps[m.title] = m;
+                })
+                return response.data;
+            })
+    }
+
+    MapFactory.getPublishedMaps = function(userId) {
+        $http.get(ENV.apiEndpoint + 'api/users/' + userId + '/publishedMaps')
+            .then(function(response){
+                response.data.forEach(function(m){
+                     MapFactory.publishedMaps[m.title] = m;
+                     MapFactory.allMaps[m.title] = m;
+                })
+                return response.data;
+            })
+    }
+
+    return MapFactory;
 })
 
 .factory('TreasureFactory', function($http, ENV, Session){
@@ -75,7 +102,7 @@ angular.module('hiddn.services', [])
       })
   }
 
-  TreasureFactory.getAllTreasure = function(){
+  TreasureFactory.getOpenTreasure = function(){
 
     return $http.get(ENV.apiEndpoint + 'api/treasure')
       .then(function(response){

@@ -1,6 +1,7 @@
 'use strict';
 var router = require('express').Router();
 var User = require('mongoose').model('User');
+var Maps = require('mongoose').model('Maps');
 var _ = require('lodash');
 
 var ensureAuthenticated = function (req, res, next) {
@@ -25,10 +26,29 @@ router.param('id', function(req, res, next, id){
 		.then(null, next);
 })
 
-
 router.get('/:id/found', function(req, res, next){
 	console.log("req.user", req.user);
 	res.json(req.user.found);
+})
+
+router.get('/:id/publishedMaps', function(req, res, next){
+	Maps.find({'auther': req.user._id}).populate('treasure').exec(function(err, maps){
+		if (err){
+			next(err);
+		} else {
+			res.json(maps);
+		}
+	})
+})
+
+router.get('/:id/donatedMaps', function(req, res, next){
+	Maps.find({'recipients': req.user._id}).populate('treasure').exec(function(err, maps){
+		if (err){
+			next(err);
+		} else {
+			res.json(maps);
+		}
+	})
 })
 
 module.exports = router;

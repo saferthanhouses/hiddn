@@ -1,1 +1,14 @@
 /* Your application styles go here */
+
+.action-sheet-wrapper {
+	width: 90%;
+	bottom: 3px;
+}
+
+.platform-android .action-sheet {
+	border-radius: 6px;
+}
+
+.platform-android .action-sheet-group {
+	padding-left: 10px;
+}

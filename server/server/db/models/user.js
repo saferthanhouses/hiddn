@@ -10,6 +10,7 @@ var schema = new mongoose.Schema({
         type: String
     },
     found: [{type: mongoose.Schema.Types.ObjectId, ref: 'Treasure'}],
+    maps: [{type: mongoose.Schema.Types.ObjectId, ref: 'Map'}],
     salt: {
         type: String
     },

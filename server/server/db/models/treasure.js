@@ -10,16 +10,13 @@ var schema = new mongoose.Schema({
     value: {
         type: String
     },
-    hider: {
-        type: {type: mongoose.Schema.Types.ObjectId, ref: 'User'}
-    },
-    finder: {
-        type: {type: mongoose.Schema.Types.ObjectId, ref: 'User'}
-    },
+    hider: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+    finder: {type: mongoose.Schema.Types.ObjectId, ref: 'User'},
      time: {
         type: Date,
         default: Date.now
-    }
+    },
+    map: {type: mongoose.Schema.Types.ObjectId, ref: 'Maps'}
 });
 
 mongoose.model('Treasure', schema);

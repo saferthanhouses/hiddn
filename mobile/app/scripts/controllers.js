@@ -10,7 +10,7 @@ angular.module('hiddn.controllers', [])
 		})
 })
 
-.controller('MapCtrl', function($scope, $cordovaGeolocation, TreasureFactory, GeoFactory, $q, $rootScope, Session) {
+.controller('MapCtrl', function($scope, $cordovaGeolocation, TreasureFactory, GeoFactory, $q, $rootScope, Session, $ionicActionSheet, $timeout, MapFactory) {
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
   // To listen for when this page is active (for example, to refresh data),
@@ -109,6 +109,10 @@ angular.module('hiddn.controllers', [])
 
     // game pause with variable gps? 
 
+    // reorganise mapLoad to go off of individual maps. If !mapName, org 
+
+    // organise by map on the found list...
+
     function updateUserPosition(map, circle){
     	console.log("updating user position ...", GeoFactory.position, GeoFactory.accuracy);
     	var newCenter = new plugin.google.maps.LatLng(GeoFactory.lat, GeoFactory.long)
@@ -117,18 +121,24 @@ angular.module('hiddn.controllers', [])
     	console.log("MapCtrl:updateUserPosition:circle.radius", circle.radius);
     }
 
-    function getTreasure(map){
-    	TreasureFactory.getAllTreasure()
-    		.then(function(treasures){
-    			console.log("MapCtrl:addTreasure:treasures:", treasures);
-    			console.log("MapCtrl:TreasureFactory.hiddenTreasure", TreasureFactory.hiddenTreasure);
-    			$scope.hiddenTreasure = TreasureFactory.hiddenTreasure;
-    			$scope.yourTreasure = TreasureFactory.yourTreasure;
-    			placeTreasures(map, TreasureFactory.hiddenTreasure);
-    		}, function(error){
-    			console.error(error);
-    		})
+    function getTreasure(map, treasureMap){
+    	if (!treasureMap){
+	    	TreasureFactory.getOpenTreasure()
+	    		.then(function(treasures){
+	    			console.log("MapCtrl:addTreasure:treasures:", treasures);
+	    			console.log("MapCtrl:TreasureFactory.hiddenTreasure", TreasureFactory.hiddenTreasure);
+	    			$scope.hiddenTreasure = TreasureFactory.hiddenTreasure;
+	    			$scope.yourTreasure = TreasureFactory.yourTreasure;
+	    			placeTreasures(map, TreasureFactory.hiddenTreasure);
+	    		}, function(error){
+	    			console.error(error);
+	    		})
+    	} else {
+    		// other maps
+
+    	}
     }
+
 
     function placeTreasures(map, treasures){
     	console.log("treasures", treasures)
@@ -139,6 +149,66 @@ angular.module('hiddn.controllers', [])
 				asyncTreasureMarkerPlacement(map, treasurePosition);
 		})
     }
+
+    // MapsFactory.getMaps() // returns an array of maps.
+
+    // add footer button to maps page
+    // with actionsheet
+    // action sheet should be able to switch between the two basic maps.
+
+	 $scope.showMaps = function() {
+
+
+	 	options = {
+		buttons: [
+   			{ text: 'Open Map' },
+   			{ text: 'Your Hidden Treasures' }
+	 		],
+ 			titleText: 'Choose A Map',
+			cancelText: 'Cancel',
+ 			cancel:  
+ 			function() {
+      			console.log("cancel pressed");
+    		},
+ 			buttonClicked: function(index) {
+ 				console.log("showMaps button:", index)
+			    if (index===0) {
+   					renderMap(TreasureFactory.hiddenTreasure)
+    			} else if (index===1){
+   					renderMap(TreasureFactory.yourTreasure)
+   				} else {
+   					chooseMap(index)
+   				}
+ 			}
+	 	}
+
+	 	MapFactory.getDonatedMaps(Session.user._id)
+	 		.then(function() {
+	 			MapFactory.getPublishedMaps(Session.user._id)
+	 		})
+	 		.then(function(){
+
+	 			console.log("allMaps", MapFactory.allMaps)
+
+	 			for (var map in MapFactory.publishedMaps){
+	 				options.buttons.push({text: "<i>Your Map</i>" + map})
+	 			}
+
+			 	for (var map in MapFactory.donatedMaps) {
+			 		options.buttons.push({text: map})
+			 	}
+
+			 	// action sheet should be populated with the 
+			   var hideSheet = $ionicActionSheet.show(options);
+
+			   // For example's sake, hide the sheet after two seconds
+			   $timeout(function() {
+			     hideSheet();
+			   }, 2000);
+			})
+	}
+
+
 })
 
 

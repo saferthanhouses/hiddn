@@ -2,8 +2,6 @@ angular.module('hiddn.services', [])
 
   .factory('GeoFactory', function($cordovaGeolocation, $rootScope) {
 
-      console.log("GeoFactory Loaded");
-
       var GeoFactory = {};
 
       function setGeoFactory(position){
@@ -16,13 +14,11 @@ angular.module('hiddn.services', [])
       GeoFactory.getCurrentPosition = function(){
         return $cordovaGeolocation.getCurrentPosition({timeout:10000, enableHighAccuray:true})
           .then(function(position){
-            console.log("position in GeoFactory.getCurrentPosition", position);
             var result = {};
             result.lat = position.coords.latitude;
             result.long = position.coords.longitude; 
             result.accuracy = position.coords.accuracy;
             setGeoFactory(position);
-            console.log("result in GeoFactory.getCurrentPosition", result);            
             return result;
           }, function(error){
             // flash! Could not get position, trying to reconnect ..
@@ -42,7 +38,6 @@ angular.module('hiddn.services', [])
             function(position) {
               setGeoFactory(position);
               $rootScope.$emit('userLocationChanged');
-              // console.log("position inside GeoF:deviceready:watchPosition", position)
           });
           return watch;
       }
@@ -116,7 +111,6 @@ angular.module('hiddn.services', [])
     // change factory so it gets all treasure then filters?
     return $http.get(ENV.apiEndpoint + 'api/treasure')
       .then(function(response){
-        console.log("TF:getAllTreasure:response", response);
         var treasure = response.data
         // all treasure hidden from the user. Not taking maps into account...
         TreasureFactory.hiddenTreasure = treasure.filter(function(t){
@@ -137,7 +131,6 @@ angular.module('hiddn.services', [])
   TreasureFactory.loadFoundTreasure = function(userId){
     return $http.get(ENV.apiEndpoint + 'api/users/' + userId + '/found')
       .then(function(response){
-        console.log("TF:loadFoundTreasure:response", response);
         TreasureFactory.found = response.data;
         return response.data;
       }, function(error){
@@ -149,7 +142,6 @@ angular.module('hiddn.services', [])
   TreasureFactory.loadMapTreasure = function(mapId){
     return $http.get(ENV.apiEndpoint + 'api/maps/' + mapId + '/treasure')
       .then(function(response){
-        console.log("TF:loadMapTreasure:response", response);
         // TreasureFactory.found = response.data;
         return response.data.treasure;
       }, function(error){
@@ -240,7 +232,6 @@ angular.module('hiddn.services', [])
             // then this cached value will not be used.
 
             if (this.isAuthenticated() && fromServer !== true) {
-                console.log("inside getLoggedInUser conditional")
                 return $q.when(Session.user);
             }
 

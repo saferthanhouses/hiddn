@@ -33,18 +33,6 @@ angular.module('hiddn.services', [])
 
       GeoFactory.watchCurrentPosition = function(){
 
-        var watch2 = window.navigator.geolocation.watchPosition(
-            function(position){
-              console.log("window geolocation", position.coords.accuracy);
-            }, function(error){
-              console.error(error)
-            }, 
-            {
-              maximumAge: 250,
-              enableHighAccuracy: true
-            }
-        );
-
          var watch = $cordovaGeolocation.watchPosition({enableHighAccuray: true });
            watch.then(
             null,
@@ -223,7 +211,7 @@ angular.module('hiddn.services', [])
         };
 
         this.logout = function () {
-            return $http.get('/logout').then(function () {
+            return $http.get(ENV.apiEndpoint + 'logout').then(function () {
                 Session.destroy();
                 $rootScope.$broadcast(AUTH_EVENTS.logoutSuccess);
             });

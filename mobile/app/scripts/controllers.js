@@ -26,12 +26,13 @@ angular.module('hiddn.controllers', [])
 
     function runMap() {
 			console.log("auth-login-success heard");
-			// GeoFactory.getCurrentPosition().then(function(result){
-				//console.log("result (posObj) inside MapCtrl deviceready",result);
-			map = initializeMap();
-	  		map.addEventListener(plugin.google.maps.event.MAP_READY, function(map){
-	  			startUserPosition(map)
-	  			getTreasure(map); 
+			initializeMap().then(function(map){
+		  		map.addEventListener(plugin.google.maps.event.MAP_READY, function(map){
+		  			startUserPosition(map)
+		  			getTreasure(map); 
+		  		})
+	 		}, function(error){
+	 			console.error(error);
 	 		});
 	 }
 
@@ -68,22 +69,22 @@ angular.module('hiddn.controllers', [])
 
     function initializeMap(){
 		// // if we have the position - run the map update
-			var startPos = new plugin.google.maps.LatLng(GeoFactory.lat, GeoFactory.long);
-	    	var map = plugin.google.maps.Map.getMap(div, {
-	    		'camera': {
-	    			'latLng': startPos,
-	    			'zoom': 14
-	    		}
-	    	});
-	    	return map;
+			return GeoFactory.getCurrentPosition().then(function(result){
+				var startPos = new plugin.google.maps.LatLng(result.lat, result.long);
+		    	var map = plugin.google.maps.Map.getMap(div, {
+		    		'camera': {
+		    			'latLng': startPos,
+		    			'zoom': 14
+		    		}
+		    	});
+		    	return map;
+			}, function(error){
+				console.error(error);
+			})
 	}
 
 
-    function startUserPosition(map){
-
-    	console.log("inside startUserPosition", map);
-    	console.log("inside startUserPosition GF.position", GeoFactory.position, GeoFactory.accuracy)
-    	
+    function startUserPosition(map){    	
     	var userPos = new plugin.google.maps.LatLng(GeoFactory.lat, GeoFactory.long);
 
     	asyncMarkerPlacement(map, {lat:GeoFactory.lat, long:GeoFactory.long}).then(function(circle){
@@ -157,8 +158,10 @@ angular.module('hiddn.controllers', [])
 				};
 
 				TreasureFactory.createTreasure(treasure)
-					.then(function(){
+					.then(function(treasure){
 						$scope.treasure.value = "";
+						console.log("HideCtrl:hideTreasure:TF.cT:returned treasure", treasure)
+						TreasureFactory.hiddenTreasure.push(treasure);
 					}, function(){
 						// flash?
 						console.error("error hiding treasure")
@@ -172,6 +175,11 @@ angular.module('hiddn.controllers', [])
 })
 
 .controller('UserCtrl', function($scope) {
+
+	$scope.logout = function(){
+		AuthService.logout();
+	}
+
 })
 
 .controller('AuthCtrl', function($scope){

@@ -238,6 +238,8 @@ angular.module('hiddn.controllers', [])
 				TreasureFactory.createTreasure(treasure)
 					.then(function(treasure){
 						$scope.treasure.value = "";
+						$scope.loadingTreasure = false;
+						$scope.button.message = "Hide Treasure!";
 						TreasureFactory.hiddenTreasure.push(treasure);
 					}, function(){
 						// flash?

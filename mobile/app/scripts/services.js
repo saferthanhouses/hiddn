@@ -181,6 +181,7 @@ angular.module('hiddn.services', [])
         TreasureFactory.hiddenTreasure = treasure.filter(function(t){
             // if the treasure was not hidden by the user and the treasure is 
             // not yet found.
+          console.log("hidden treasure", t);
           return ((t.hider !== Session.user._id) && (!t.finder));
         })
         // all treasure placed by the user. This does not take maps into account.

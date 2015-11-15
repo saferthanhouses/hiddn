@@ -1,6 +1,6 @@
 angular.module('hiddn.services', [])
 
-  .factory('GeoFactory', function($cordovaGeolocation, $rootScope) {
+  .factory('GeoFactory', function($cordovaGeolocation, $rootScope, TreasureFactory) {
 
       var GeoFactory = {};
 
@@ -37,10 +37,46 @@ angular.module('hiddn.services', [])
             },
             function(position) {
               setGeoFactory(position);
+              console.log("after setGeoPosition, GeoFactory.position", GeoFactory.position, GeoFactory.accuracy);
+              console.log("position accuracy ... ", position.coords.accuracy);
+              if (GeoFactory.accuracy < 50){
+                GeoFactory.checkTreasure();
+              } else {
+                console.log("waiting for a better position read ... ");
+              }
               $rootScope.$emit('userLocationChanged');
           });
           return watch;
       }
+
+      GeoFactory.checkTreasure = function() {
+        console.log("HiddenTreasure we've got", TreasureFactory.hiddenTreasure);
+        for (var i = 0; i < TreasureFactory.hiddenTreasure.length; i++){
+            // log the user's distance from treasure:
+            var t_coords = TreasureFactory.hiddenTreasure[i].coords.split(' ');
+            var t_lat = t_coords[0], t_long = t_coords[1];
+            var d = getDistanceFromLatLonInKm(GeoFactory.lat, GeoFactory.long, t_lat, t_long);   
+            console.log("distance from user to", TreasureFactory.hiddenTreasure[i].value + ":", d + "km");
+        }
+      }
+
+      function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
+                var R = 6371; // Radius of the earth in km
+                var dLat = deg2rad(lat2-lat1);  // deg2rad below
+                var dLon = deg2rad(lon2-lon1); 
+                var a = 
+                  Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+                  Math.sin(dLon/2) * Math.sin(dLon/2)
+                  ; 
+                var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+                var d = R * c; // Distance in km
+                return d;
+        }
+  
+       function deg2rad(deg) {
+            return deg * (Math.PI/180)
+       }
 
       return GeoFactory;
   })
@@ -120,6 +156,7 @@ angular.module('hiddn.services', [])
         TreasureFactory.yourTreasure = treasure.filter(function(t){
           return t.hider === Session.user._id;
         })
+        console.log("HiddenTreasure,", TreasureFactory.hiddenTreasure)
         return response.data;
       }, function(error){
         console.error(error);

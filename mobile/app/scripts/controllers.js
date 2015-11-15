@@ -10,7 +10,7 @@ angular.module('hiddn.controllers', [])
 		})
 })
 
-.controller('MapCtrl', function($scope, $cordovaGeolocation, TreasureFactory, GeoFactory, $q, $rootScope, Session, $ionicActionSheet, $timeout) {
+.controller('MapCtrl', function($scope, $cordovaGeolocation, TreasureFactory, GeoFactory, $q, $rootScope, Session, $ionicActionSheet, $timeout, MapFactory) {
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
   // To listen for when this page is active (for example, to refresh data),
@@ -148,6 +148,7 @@ angular.module('hiddn.controllers', [])
 
 	 $scope.showMaps = function() {
 
+
 	 	options = {
 		buttons: [
    			{ text: 'Open Map' },
@@ -170,17 +171,24 @@ angular.module('hiddn.controllers', [])
  			}
 	 	}
 
-	 	for (var map in MapFactory.userMaps) {
-	 		options.buttons.push({text: map})
-	 	}
+	 	MapFactory.getDonatedMaps(Session.user._id)
+	 		.then(function() {
+	 			MapFactory.getPublishedMaps(Session.user._id)
+	 		})
+	 		.then(function(){
 
-	 	// action sheet should be populated with the 
-	   var hideSheet = $ionicActionSheet.show(options);
+			 	for (var map in MapFactory.donatedMaps) {
+			 		options.buttons.push({text: map})
+			 	}
 
-	   // For example's sake, hide the sheet after two seconds
-	   $timeout(function() {
-	     hideSheet();
-	   }, 2000);
+			 	// action sheet should be populated with the 
+			   var hideSheet = $ionicActionSheet.show(options);
+
+			   // For example's sake, hide the sheet after two seconds
+			   $timeout(function() {
+			     hideSheet();
+			   }, 2000);
+			})
 	}
 
 

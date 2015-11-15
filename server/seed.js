@@ -62,6 +62,7 @@ var seedTreasure = function(user) {
 var seedMaps = function(treasure, user) {
     var map = 
         {
+            title: "testMap",
             auther: user[0]._id,
             treasure: treasure,
             recipients: [user[1]._id]

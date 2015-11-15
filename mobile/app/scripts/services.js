@@ -249,6 +249,20 @@ angular.module('hiddn.services', [])
                 });
         };
 
+        this.signup = function (credentials) {
+            //sends a post request containing the user's credentials to 
+            return $http.post(ENV.apiEndpoint + 'api/user/signup', credentials)
+                //once the user has been created on the backend...
+                .then(function(response) {
+                    //a second post request is created to log the user in
+                    return $http.post('/login', credentials);
+                })
+                .then(onSuccessfulLogin)
+                .catch(function () {
+                    return $q.reject({ message: 'Invalid signup credentials.' });
+                });
+        };
+
         this.logout = function () {
             return $http.get(ENV.apiEndpoint + 'logout').then(function () {
                 Session.destroy();

@@ -1,6 +1,8 @@
 angular.module('hiddn.controllers', [])
 
 .controller('TreasureCtrl', function($scope, TreasureFactory, Session) {
+
+	console.log("session inside treasure");
 	TreasureFactory.loadFoundTreasure(Session.user._id)
 		.then(function(treasures){
 			console.log("successful load")
@@ -278,10 +280,12 @@ angular.module('hiddn.controllers', [])
 .controller('SignupCtrl', function($scope, AuthService){
 		console.log("inside signup");
 		$scope.user = {};
-		$scope.login = function(){
-			var creds = {email: $scope.user.email, password: $scope.user.password};
-			AuthService.login(creds).then(function(){
-				$state.go('map');
-			})
+		$scope.sendSignup = function (signupInfo){
+			AuthService.signup(signupInfo)
+				.then(function () {
+		            $state.go('home');
+		        }).catch(function () {
+		            $scope.error = 'Signup error';
+		        });
 		}
 })

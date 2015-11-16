@@ -25,18 +25,18 @@ var User = Promise.promisifyAll(mongoose.model('User'));
 var Treasure = Promise.promisifyAll(mongoose.model('Treasure'));
 var Maps = Promise.promisifyAll(mongoose.model('Maps'));
 
-var seedUsers = function (treasure) {
+var seedUsers = function () {
 
     var users = [
         {
             email: 'testing@fsa.com',
-            password: 'password',
-            found: treasure
+            password: 'password'
+            // found: [treasure[1]]
         },
         {
             email: 'obama@gmail.com',
-            password: 'potus',
-            found: treasure
+            password: 'potus'
+            // found: [treasure[0]]
         }
     ];
 
@@ -45,16 +45,16 @@ var seedUsers = function (treasure) {
 };
 
 var seedTreasure = function(user) {
-    var treasure = [
-        {
-            coords: "40.7051951 -74.0090403",
-            value: "GOLD",
-        },
-        {
-            coords: "41.7051951 -74.0090403",
-            value: "SILVER"
-        }
-    ]
+    // var treasure = [
+    //     {
+    //         coords: "40.7051951 -74.0090403",
+    //         value: "GOLD",
+    //     },
+    //     {
+    //         coords: "41.7051951 -74.0090403",
+    //         value: "SILVER"
+    //     }
+    // ]
 
     return Treasure.createAsync(treasure);
 }
@@ -77,17 +77,21 @@ var treasures = {};
 connectToDb.then(function (db) {
     var users;
     db.db.dropDatabase()
+    // .then(function(){
+    //     return seedTreasure();
+    // }).then(function(treasure){
+    //     treasures.treasure = treasure.map(function(t){
+    //         return t._id;
+    //     })
+    // console.log("treasure", treasures.treasure);
     .then(function(){
-        return seedTreasure();
-    }).then(function(treasure){
-        treasures.treasure = treasure.map(function(t){
-            return t._id;
-        })
-        console.log("treasure", treasures.treasure);
-        return seedUsers(users);
-    }).then(function(users){
-        return seedMaps(treasures.treasure, users)
-    }).then(function(){
+        return seedUsers();
+    })
+    // .then(function(users){
+    //     // console.log("users", users);
+    //     return seedMaps(treasures.treasure, users)
+    // })
+    .then(function(){
         console.log("db seeded");
         process.exit(0);
     }).catch(function(err){

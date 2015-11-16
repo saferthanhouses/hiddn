@@ -1,13 +1,19 @@
 angular.module('hiddn.controllers', [])
 
 .controller('TreasureCtrl', function($scope, TreasureFactory, Session) {
-
-	TreasureFactory.loadFoundTreasure(Session.user._id)
-		.then(function(treasures){
-			$scope.treasures = treasures;
-		}, function(error){
-			console.error(error);
-		})
+	// console.log("TreasureCtrl run. Treasures:", TreasureFactory.Treasure);
+	$scope.$on('$ionicView.enter', function(e) {
+		
+		TreasureFactory.loadFoundTreasure(Session.user._id)
+			.then(function(treasures){
+				console.log("TreasureCtrl loading treasures", treasures);
+				// if youHiddenTreasures is updated will the scope update too?
+				$scope.treasures = TreasureFactory.yourFoundTreasure;
+				console.log("TreasureFactory.yourHiddenTreasure after loadFoundTreasure", TreasureFactory.yourFoundTreasure);
+			}, function(error){
+				console.error(error);
+			})
+	})
 })
 
 .controller('MapCtrl', function($scope, $cordovaGeolocation, TreasureFactory, GeoFactory, $q, $rootScope, Session, $ionicActionSheet, $timeout, MapFactory) {
@@ -23,6 +29,19 @@ angular.module('hiddn.controllers', [])
     var map;
 
 	$rootScope.$on('auth-login-success', runMap)
+
+	$rootScope.$on('auth-logout-success', function(){
+
+	})
+
+	$rootScope.$on('treasureFound', function(event, treasure){
+		console.log("treasureFound event heard", treasure);
+		for (var i = 0 ; i< MapFactory.mapMarkers.length; i++){
+			if (MapFactory.mapMarkers[i].treasureId == treasure.treasure){
+				MapFactory.mapMarkers[i].remove();
+			}
+		}
+	})
 
     function runMap() {
 			console.log("auth-login-success heard");
@@ -128,7 +147,7 @@ angular.module('hiddn.controllers', [])
 	    	TreasureFactory.getOpenTreasure()
 	    		.then(function(treasures){
 	    			$scope.hiddenTreasure = TreasureFactory.hiddenTreasure;
-	    			$scope.yourTreasure = TreasureFactory.yourTreasure;
+	    			$scope.yourHiddenTreasure = TreasureFactory.yourHiddenTreasure;
 	    			placeTreasures(map, TreasureFactory.hiddenTreasure);
 	    		}, function(error){
 	    			console.error(error);
@@ -154,6 +173,8 @@ angular.module('hiddn.controllers', [])
 				t_coords = treasure.coords.split(' ');
 				treasurePosition = {lat: t_coords[0], long: t_coords[1]};
 				asyncTreasureMarkerPlacement(map, treasurePosition).then(function(marker){
+					console.log("Is treasure available in here?", treasure)
+					marker.treasureId = treasure._id
 					MapFactory.mapMarkers.push(marker);
 				});
 		})
@@ -182,7 +203,7 @@ angular.module('hiddn.controllers', [])
 			    if (index===0) {
    					placeTreasures(null, TreasureFactory.hiddenTreasure)
     			} else if (index===1){
-   					placeTreasures(null, TreasureFactory.yourTreasure)
+   					placeTreasures(null, TreasureFactory.yourHiddenTreasure)
    				} else {
    					chooseMap(index)
    				}
@@ -238,7 +259,9 @@ angular.module('hiddn.controllers', [])
 				TreasureFactory.createTreasure(treasure)
 					.then(function(treasure){
 						$scope.treasure.value = "";
-						TreasureFactory.hiddenTreasure.push(treasure);
+						$scope.loadingTreasure = false;
+						$scope.button.message = "Hide Treasure!";
+						TreasureFactory.yourHiddenTreasure.push(treasure);
 					}, function(){
 						// flash?
 						console.error("error hiding treasure")
@@ -253,8 +276,12 @@ angular.module('hiddn.controllers', [])
 
 .controller('UserCtrl', function(AuthService, $scope, $state, Session) {
 	$scope.user = {};
-	$scope.user.email = Session.user.email;
+	$scope.$on('$ionicView.enter', function(e) {
+		
+		$scope.user.email = Session.user.email;
+	});
 	$scope.logout = function(){
+		$scope.user.email = ""
 		AuthService.logout();
 		$state.go('auth.login');
 	}
@@ -272,6 +299,8 @@ angular.module('hiddn.controllers', [])
 			AuthService.login(creds).then(function(){
 				$state.go('tab.map');
 				// flash successful login.
+			}, function(error){
+				console.error("login unsuccessful");
 			})
 		}
 })
@@ -289,6 +318,8 @@ angular.module('hiddn.controllers', [])
 				$scope.signUpDisabled=true;
 				AuthService.signup($scope.user)
 					.then(function () {
+						$scope.buttonText.text = "Signup";
+						$scope.signUpDisabled = false;
 			            $state.go('tab.map');
 			        }).catch(function () {
 			            $scope.error = 'Signup error';

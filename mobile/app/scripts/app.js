@@ -7,9 +7,10 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config', 'ngCordova'])
 
-.run(function($ionicPlatform, AuthService, $rootScope, $state, GeoFactory) {
+.run(function($ionicPlatform, AuthService, $rootScope, $state, GeoFactory, Session) {
 
     console.log("inside run");
+
 
     // as the app boots - declare stateChange listener tha checks for a auth on stateChange
     $rootScope.$on('$stateChangeStart', function (event, toState, toParams) {
@@ -18,7 +19,7 @@ angular.module('hiddn', ['ionic', 'hiddn.controllers', 'hiddn.services', 'config
         if (AuthService.isAuthenticated()) {
           // The user is authenticated.
           // Short circuit with return.
-          console.log("user is authenticated");
+          console.log("user is authenticated", Session.user);
           return;
         }
 

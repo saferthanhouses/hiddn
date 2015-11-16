@@ -1,6 +1,20 @@
 angular.module('hiddn.services', [])
 
-  .factory('GeoFactory', function($cordovaGeolocation, $rootScope) {
+.factory('UserFactory', function(Session, $http, ENV){
+    var UserFactory = {};
+    UserFactory.updateUserFound = function(userId, update){
+        return $http.put(ENV.apiEndpoint + 'api/users/' + userId + '/found', update)
+            .then(function(response){
+                console.log("User update successful", response.data);
+                return response.data
+            }, function(error){
+                return error;
+            })
+    }
+
+    return UserFactory;
+})
+  .factory('GeoFactory', function($cordovaGeolocation, $rootScope, TreasureFactory, Session, UserFactory) {
 
       var GeoFactory = {};
 
@@ -37,16 +51,83 @@ angular.module('hiddn.services', [])
             },
             function(position) {
               setGeoFactory(position);
+              console.log("after setGeoPosition, GeoFactory.position", GeoFactory.position, GeoFactory.accuracy);
+              console.log("position accuracy ... ", position.coords.accuracy);
+              if (GeoFactory.accuracy < 50){
+                GeoFactory.checkTreasure();
+              } else {
+                console.log("waiting for a better position read ... ");
+              }
               $rootScope.$emit('userLocationChanged');
           });
           return watch;
       }
 
+      GeoFactory.checkTreasure = function() {
+        console.log("Treausure that's hidden from us", TreasureFactory.hiddenTreasure);
+        for (var i = 0; i < TreasureFactory.hiddenTreasure.length; i++){
+            // log the user's distance from treasure:
+            var treasure = TreasureFactory.hiddenTreasure[i]
+            var t_coords = treasure.coords.split(' ');
+            var t_lat = t_coords[0], t_long = t_coords[1];
+            var d = getDistanceFromLatLonInKm(GeoFactory.lat, GeoFactory.long, t_lat, t_long);   
+            console.log("distance from user to", treasure.value + ":", d + "km");
+            // if the user is close enough;
+            if (d<TreasureFactory.findDistance){
+                console.log("User found treasure!");
+                // add to frontend data.
+                TreasureFactory.hiddenTreasure.splice(i, 1);
+                TreasureFactory.yourHiddenTreasure.push(treasure);
+                // will this show?
+
+                // update on backend...
+                    // add to treasure instance
+                TreasureFactory.updateTreasureStatus(treasure._id, {finder: Session.user._id})
+                    // add to user's found property
+                console.log("treasure._id", treasure._id)
+                UserFactory.updateUserFound(Session.user._id, {found: treasure._id})
+                // remove from / re-render map?
+                $rootScope.$emit('treasureFound', {treasure: treasure._id});
+            }
+        }
+      }
+
+      function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
+                var R = 6371; // Radius of the earth in km
+                var dLat = deg2rad(lat2-lat1);  // deg2rad below
+                var dLon = deg2rad(lon2-lon1); 
+                var a = 
+                  Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+                  Math.sin(dLon/2) * Math.sin(dLon/2)
+                  ; 
+                var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+                var d = R * c; // Distance in km
+                return d;
+        }
+  
+       function deg2rad(deg) {
+            return deg * (Math.PI/180)
+       }
+
       return GeoFactory;
   })
 
 
-.factory('MapFactory', function($cordovaGeolocation, $http, ENV, Session) {
+
+.factory('MapFactory', function($cordovaGeolocation, $http, ENV, Session, $rootScope) {
+
+    $rootScope.$on('auth-logout-success', function(){
+        // on logout, reset values.
+        MapFactory.publishedMaps = {}
+        MapFactory.donatedMaps = {}
+        MapFactory.allMaps = {}
+        MapFactory.mapMarkers.forEach(function(marker){
+            marker.remove();
+        });
+        MapFactory.mapMarkers = [];
+    })
+
     var MapFactory = {};
     MapFactory.publishedMaps = {}
     MapFactory.donatedMaps = {}
@@ -78,7 +159,7 @@ angular.module('hiddn.services', [])
     return MapFactory;
 })
 
-.factory('TreasureFactory', function($http, ENV, Session){
+.factory('TreasureFactory', function($http, ENV, Session, $rootScope){
 
     // need to get:
     // treasure on the open map that the user has not placed.
@@ -89,9 +170,20 @@ angular.module('hiddn.services', [])
     // 1. !!!
     // need an array of all the nearby hidden treasure.
 
+    $rootScope.$on('auth-logout-success', function(){
+        // treasure 
+        TreasureFactory.hiddenTreasure = [];
+        TreasureFactory.yourHiddenTreasure = [];
+    })
+
   var TreasureFactory = {}
+  TreasureFactory.findDistance = 5.0;
+  // treasure we didn't hide and hasn't been found - open treasure
   TreasureFactory.hiddenTreasure = [];
-  TreasureFactory.yourTreasure = [];
+  // Treasure we hid
+  TreasureFactory.yourHiddenTreasure = [];
+  // Treasure we've found
+  TreasureFactory.yourFoundTreasure = [];
 
   TreasureFactory.createTreasure = function(treasure){
     return $http.post(ENV.apiEndpoint + 'api/treasure/', treasure)
@@ -114,10 +206,12 @@ angular.module('hiddn.services', [])
         var treasure = response.data
         // all treasure hidden from the user. Not taking maps into account...
         TreasureFactory.hiddenTreasure = treasure.filter(function(t){
-          return t.hider !== Session.user._id;
+            // if the treasure was not hidden by the user and the treasure is 
+            // not yet found.
+          return ((t.hider !== Session.user._id) && (!t.finder));
         })
         // all treasure placed by the user. This does not take maps into account.
-        TreasureFactory.yourTreasure = treasure.filter(function(t){
+        TreasureFactory.yourHiddenTreasure = treasure.filter(function(t){
           return t.hider === Session.user._id;
         })
         return response.data;
@@ -131,7 +225,7 @@ angular.module('hiddn.services', [])
   TreasureFactory.loadFoundTreasure = function(userId){
     return $http.get(ENV.apiEndpoint + 'api/users/' + userId + '/found')
       .then(function(response){
-        TreasureFactory.found = response.data;
+        TreasureFactory.yourFoundTreasure = response.data;
         return response.data;
       }, function(error){
         console.error(error);
@@ -150,6 +244,19 @@ angular.module('hiddn.services', [])
       })
   }
 
+  // how to remove markers from the treasure map when found? 
+  // add a reference on the marker to the treasure or on the treasure to the marker
+
+  TreasureFactory.updateTreasureStatus = function(treasureId, update){
+    // PUT/api/treasure/:id
+    return $http.put(ENV.apiEndpoint + 'api/treasure/' + treasureId, update)
+        .then(function(response){ 
+            return response.data;
+        }, function(error){
+            console.error(error);
+        })
+  }
+
   return TreasureFactory;
 
 })
@@ -157,7 +264,7 @@ angular.module('hiddn.services', [])
 .constant('AUTH_EVENTS', {
         loginSuccess: 'auth-login-success',
         loginFailed: 'auth-login-failed',
-        logoutSuccess: 'auth-logout-success',
+        logoutSuccess: 'auth-logout-success-',
         sessionTimeout: 'auth-session-timeout',
         notAuthenticated: 'auth-not-authenticated',
         notAuthorized: 'auth-not-authorized'

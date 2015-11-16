@@ -36,8 +36,19 @@ router.param('id', function(req, res, next, id){
 })
 
 router.get('/:id/found', function(req, res, next){
-	console.log("req.user", req.user);
+	console.log("req.user", req.user.found);
 	res.json(req.user.found);
+})
+
+router.put('/:id/found', function(req, res, next){
+	// THIS WILL ONLY UPDATE THE FOUND CATEGORY!
+	req.user.found.push(req.body.found);
+	req.user.save()
+		.then(function(data){
+			res.json(data);
+		})
+		// .catch(next(error));
+	.then(null, next);
 })
 
 router.get('/:id/publishedMaps', function(req, res, next){

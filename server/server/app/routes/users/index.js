@@ -36,7 +36,7 @@ router.param('id', function(req, res, next, id){
 })
 
 router.get('/:id/found', function(req, res, next){
-	console.log("req.user", req.user);
+	console.log("req.user", req.user.found);
 	res.json(req.user.found);
 })
 
